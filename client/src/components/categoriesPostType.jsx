@@ -8,30 +8,30 @@ const CategoriesPostType = ({ selectedCategory, onCategoryChange }) => {
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
 
   const handleSelect = (value) => {
-    const fakeEvent = { target: { value } }; // mimic an event object
+    const fakeEvent = { target: { value } };
     onCategoryChange(fakeEvent);
     setDropdownOpen(false);
   };
 
   return (
-    <div className="relative inline-block text-left">
+    <div className="relative inline-block text-left w-full">
       <button
         type="button"
         onClick={toggleDropdown}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+        className="w-full px-4 py-2 bg-purple-600 text-white rounded-full shadow-md hover:bg-purple-700 transition font-semibold cursor-pointer"
       >
         Category: {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
       </button>
 
       {dropdownOpen && (
-        <div className="absolute mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+        <div className="absolute z-20 mt-2 w-full rounded-xl shadow-xl bg-white ring-1 ring-purple-300">
           <div className="py-1">
             {categories.map((category) => (
               <button
                 type="button"
                 key={category}
                 onClick={() => handleSelect(category)}
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-purple-100 hover:text-purple-700 rounded-lg transition text-left"
               >
                 {category}
               </button>

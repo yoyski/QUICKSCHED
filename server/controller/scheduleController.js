@@ -5,20 +5,20 @@ import dotenv from 'dotenv';
 dotenv.config(); // Load .env before using process.env
 
 export const addScheduledPost = async (req, res) => {
-  const { post_type, message, schedule_publish_time, attached_media } = req.body;
+  const { post_type, message, schedule_publish_time, attached_media, images } = req.body;
 
   try {
     //Save to DB
-
     const schedulePost = new ScheduledPost({
       post_type,
       message,
       schedule_publish_time: new Date(schedule_publish_time),
-      attached_media,
+      images
     });
 
     const savedScheduledPost = await schedulePost.save();
 
+    
     res.status(201).json({ message: 'Post scheduled on Facebook', savedScheduledPost });
 
   } catch (error) {

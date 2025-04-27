@@ -2,6 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CategoriesPostType from "../../components/categoriesPostType";
 import ScheduleDate from "../../components/scheduleDate";
+import { UnsavedChangesWarning } from "../../components/unsavedChangesWarning";
+
 import axios from "axios";
 
 export const Create = () => {
@@ -10,6 +12,8 @@ export const Create = () => {
   const [selectedCategory, setSelectedCategory] = useState("general");
   const [scheduleDate, setScheduleDate] = useState(null);
   const [isValidSchedule, setIsValidSchedule] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [showWarningLabel, setShowWarningLabel] = useState(false);
 
   const [schedulePost, setSchedulePost] = useState({
     post_type: "general",
@@ -34,6 +38,17 @@ export const Create = () => {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles((prev) => [...prev, ...files]); // <--- adds new files to old files
+  };
+
+  const handleRemoveFile = (indexToRemove) => {
+    setSelectedFiles((prev) =>
+      prev.filter((_, index) => index !== indexToRemove)
+    );
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
 
@@ -41,23 +56,59 @@ export const Create = () => {
       console.warn("Invalid schedule or empty message.");
       return;
     }
+    // setLoading(true);
 
     try {
+      let uploadedImageUrls = [];
+
+      // Upload to Cloudinary only if there are selected files
+      if (selectedFiles && selectedFiles.length > 0) {
+        const uploadPromises = selectedFiles.map(async (file) => {
+          const data = new FormData();
+          data.append("file", file);
+          data.append("upload_preset", "quicksched_cloudinary");
+          data.append("cloud_name", "daxtqkkj5");
+
+          const cloudinaryRes = await axios.post(
+            "https://api.cloudinary.com/v1_1/daxtqkkj5/image/upload",
+            data
+          );
+
+          return cloudinaryRes.data.url;
+        });
+
+        uploadedImageUrls = await Promise.all(uploadPromises);
+        console.log("Uploaded image URLs:", uploadedImageUrls);
+      }
+
+      // Create scheduled post with or without images
+      const postData = {
+        post_type: schedulePost.post_type,
+        message: schedulePost.message,
+        schedule_publish_time: schedulePost.schedule_publish_time,
+        images: uploadedImageUrls, // array of image URLs
+      };
+
       const res = await axios.post(
         "http://localhost:8000/quicksched/schedule",
-        {
-          post_type: schedulePost.post_type,
-          message: schedulePost.message,
-          schedule_publish_time: schedulePost.schedule_publish_time,
-        }
+        postData
       );
 
       console.log("Upload response:", res.data);
       navigate("/");
     } catch (error) {
       console.error("Error creating scheduled post:", error);
+    } finally {
+      // setLoading(false);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      selectedFiles.forEach((file) => URL.revokeObjectURL(file));
+    };
+  }, [selectedFiles]); // Cleanup URLs to avoid memory leaks
+  // Update schedulePost when selectedCategory changes
 
   useEffect(() => {
     if (scheduleDate) {
@@ -75,53 +126,111 @@ export const Create = () => {
     }
   }, [scheduleDate]);
 
+  const handleBack = () => {
+    if (schedulePost.message.trim() !== "" || selectedFiles.length > 0) {
+      setShowWarningLabel(true);
+    } else {
+      navigate("/");
+    }
+  };
+
   return (
     <div className="h-screen flex flex-col justify-between bg-[#eef2f5] px-4 pt-6 pb-24 max-w-sm mx-auto text-gray-800">
+      {showWarningLabel && (
+        <UnsavedChangesWarning
+          onCancel={() => setShowWarningLabel(false)}
+          onConfirm={() => navigate("/")}
+        />
+      )}
+
       <form
         onSubmit={onSubmit}
-        className="bg-blue-500 rounded-3xl shadow-xl p-4 flex flex-col space-y-4"
+        className="bg-white rounded-3xl shadow-xl p-6 flex flex-col space-y-6"
       >
-        {/* Category Selection */}
-        <CategoriesPostType
-          selectedCategory={selectedCategory}
-          onCategoryChange={handleCategoryChange}
-        />
+        {/* Upload Image and Category Section */}
+        <div className="flex gap-2 items-center">
+          {/* Small Upload Button */}
+          <label className="w-12 h-12 flex items-center justify-center cursor-pointer bg-purple-600 hover:bg-purple-700 text-white rounded-full">
+            <i className="fa-solid fa-upload"></i>
+            <input
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </label>
+
+          {/* Category Selection */}
+          <div className="flex-1">
+            <CategoriesPostType
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+            />
+          </div>
+        </div>
 
         {/* Message Input */}
         <textarea
           id="message"
           name="message"
-          rows="3"
+          rows="4"
           placeholder="Write your message..."
           value={schedulePost.message}
           onChange={handleChange}
-          className="bg-[#f9fafb] border border-gray-300 rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-400"
+          className="bg-[#f9fafb] border border-gray-300 rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-400 w-full"
         />
 
         {/* Schedule Date Picker */}
         <ScheduleDate onChange={setScheduleDate} />
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={!isValidSchedule}
-          className={`w-full font-semibold py-3 rounded-full transition text-white ${
-            isValidSchedule
-              ? "bg-purple-500 hover:bg-purple-600"
-              : "bg-gray-300 cursor-not-allowed"
-          }`}
-        >
-          {isValidSchedule ? "Schedule Post" : "Invalid Schedule"}
-        </button>
-      </form>
+        {/* Image Previews */}
+        {selectedFiles.length > 0 && (
+          <div className="flex gap-3 overflow-x-auto pt-2">
+            {selectedFiles.map((file, index) => (
+              <div
+                key={index}
+                className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 border-purple-300 shadow-md"
+              >
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt="Selected"
+                  className="object-cover w-full h-full"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(index)}
+                  className="absolute top-1 right-1 text-red-500 hover:text-red-600 w-5 h-5 flex items-center justify-center text-xs cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
-      {/* Back Link */}
-      <Link
-        to="/"
-        className="mt-4 text-center text-sm text-purple-500 hover:underline"
-      >
-        Back
-      </Link>
+        {/* Action Buttons: Back & Schedule */}
+        <div className="flex items-center justify-between gap-4 pt-2">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="flex-1 text-center font-semibold py-3 rounded-full text-purple-600 border border-purple-300 hover:bg-purple-50 transition cursor-pointer"
+          >
+            ← Back
+          </button>
+
+          <button
+            type="submit"
+            disabled={!isValidSchedule}
+            className={`flex-1 font-semibold py-3 rounded-full text-white transition-all ${
+              isValidSchedule
+                ? "bg-purple-500 hover:bg-purple-600"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
+            {isValidSchedule ? "Schedule Post" : "Invalid Schedule"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

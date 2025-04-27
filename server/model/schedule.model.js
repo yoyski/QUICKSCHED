@@ -25,6 +25,10 @@ const scheduledPostSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    images: {
+      type: [String],
+      default: [],
+    },
     attached_media: [
       {
         media_fbid: {
