@@ -14,12 +14,33 @@ export const Create = () => {
   const [isValidSchedule, setIsValidSchedule] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [showWarningLabel, setShowWarningLabel] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const [schedulePost, setSchedulePost] = useState({
     post_type: "general",
     message: "",
     schedule_publish_time: null,
   });
+
+  useEffect(() => {
+    let interval;
+    if (loading) {
+      setProgress(0);
+      interval = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(interval);
+            return prev;
+          }
+          return prev + Math.random() * 10;
+        });
+      }, 200);
+    } else {
+      setProgress(0);
+    }
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,7 +61,7 @@ export const Create = () => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    setSelectedFiles((prev) => [...prev, ...files]); // <--- adds new files to old files
+    setSelectedFiles((prev) => [...prev, ...files]);
   };
 
   const handleRemoveFile = (indexToRemove) => {
@@ -56,13 +77,12 @@ export const Create = () => {
       console.warn("Invalid schedule or empty message.");
       return;
     }
-    // setLoading(true);
 
+    setLoading(true);
     try {
       let uploadedImageUrls = [];
 
-      // Upload to Cloudinary only if there are selected files
-      if (selectedFiles && selectedFiles.length > 0) {
+      if (selectedFiles.length > 0) {
         const uploadPromises = selectedFiles.map(async (file) => {
           const data = new FormData();
           data.append("file", file);
@@ -81,12 +101,11 @@ export const Create = () => {
         console.log("Uploaded image URLs:", uploadedImageUrls);
       }
 
-      // Create scheduled post with or without images
       const postData = {
         post_type: schedulePost.post_type,
         message: schedulePost.message,
         schedule_publish_time: schedulePost.schedule_publish_time,
-        images: uploadedImageUrls, // array of image URLs
+        images: uploadedImageUrls,
       };
 
       const res = await axios.post(
@@ -99,7 +118,8 @@ export const Create = () => {
     } catch (error) {
       console.error("Error creating scheduled post:", error);
     } finally {
-      // setLoading(false);
+      setProgress(100);
+      setTimeout(() => setLoading(false), 500);
     }
   };
 
@@ -107,8 +127,7 @@ export const Create = () => {
     return () => {
       selectedFiles.forEach((file) => URL.revokeObjectURL(file));
     };
-  }, [selectedFiles]); // Cleanup URLs to avoid memory leaks
-  // Update schedulePost when selectedCategory changes
+  }, [selectedFiles]);
 
   useEffect(() => {
     if (scheduleDate) {
@@ -136,6 +155,27 @@ export const Create = () => {
 
   return (
     <div className="h-screen flex flex-col justify-between bg-[#eef2f5] px-4 pt-6 pb-24 max-w-sm mx-auto text-gray-800">
+      {/* Top Loading Bar */}
+      {loading && (
+        <div className="fixed inset-0 bg-transparent z-50 flex items-center justify-center">
+          {/* Bouncing Dots Loader */}
+          <div className="flex space-x-2">
+            <div
+              className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-green-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.2s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-pink-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.4s" }}
+            ></div>
+          </div>
+        </div>
+      )}
+
       {showWarningLabel && (
         <UnsavedChangesWarning
           onCancel={() => setShowWarningLabel(false)}
@@ -149,7 +189,6 @@ export const Create = () => {
       >
         {/* Upload Image and Category Section */}
         <div className="flex gap-2 items-center">
-          {/* Small Upload Button */}
           <label className="w-12 h-12 flex items-center justify-center cursor-pointer bg-purple-600 hover:bg-purple-700 text-white rounded-full">
             <i className="fa-solid fa-upload"></i>
             <input
@@ -160,7 +199,6 @@ export const Create = () => {
             />
           </label>
 
-          {/* Category Selection */}
           <div className="flex-1">
             <CategoriesPostType
               selectedCategory={selectedCategory}
@@ -169,7 +207,6 @@ export const Create = () => {
           </div>
         </div>
 
-        {/* Message Input */}
         <textarea
           id="message"
           name="message"
@@ -180,10 +217,8 @@ export const Create = () => {
           className="bg-[#f9fafb] border border-gray-300 rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-400 w-full"
         />
 
-        {/* Schedule Date Picker */}
         <ScheduleDate onChange={setScheduleDate} />
 
-        {/* Image Previews */}
         {selectedFiles.length > 0 && (
           <div className="flex gap-3 overflow-x-auto pt-2">
             {selectedFiles.map((file, index) => (
@@ -208,7 +243,6 @@ export const Create = () => {
           </div>
         )}
 
-        {/* Action Buttons: Back & Schedule */}
         <div className="flex items-center justify-between gap-4 pt-2">
           <button
             type="button"
