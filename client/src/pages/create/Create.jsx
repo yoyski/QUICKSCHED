@@ -1,12 +1,14 @@
+import { useParams } from "react-router-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CategoriesPostType from "../../components/categoriesPostType";
 import ScheduleDate from "../../components/scheduleDate";
 import { UnsavedChangesWarning } from "../../components/unsavedChangesWarning";
-
 import axios from "axios";
 
 export const Create = () => {
+  const { id } = useParams(); // <-- added
+
   const navigate = useNavigate();
 
   const [selectedCategory, setSelectedCategory] = useState("general");
@@ -22,6 +24,31 @@ export const Create = () => {
     message: "",
     schedule_publish_time: null,
   });
+
+  // Fetch existing post for editing
+  useEffect(() => {
+    if (id) {
+      const fetchPost = async () => {
+        try {
+          const res = await axios.get(`http://localhost:8000/quicksched/schedule/${id}`);
+          const post = res.data;
+          setSchedulePost({
+            post_type: post.post_type,
+            message: post.message,
+            schedule_publish_time: post.schedule_publish_time,
+          });
+          setSelectedCategory(post.post_type);
+          setScheduleDate(new Date(post.schedule_publish_time));
+          if (post.images) {
+            setSelectedFiles(post.images);
+          }
+        } catch (err) {
+          console.error("Failed to fetch post:", err);
+        }
+      };
+      fetchPost();
+    }
+  }, [id]); // <-- added
 
   useEffect(() => {
     let interval;
@@ -82,8 +109,11 @@ export const Create = () => {
     try {
       let uploadedImageUrls = [];
 
-      if (selectedFiles.length > 0) {
-        const uploadPromises = selectedFiles.map(async (file) => {
+      const newFiles = selectedFiles.filter((file) => file instanceof File);
+      const existingUrls = selectedFiles.filter((file) => typeof file === "string");
+
+      if (newFiles.length > 0) {
+        const uploadPromises = newFiles.map(async (file) => {
           const data = new FormData();
           data.append("file", file);
           data.append("upload_preset", "quicksched_cloudinary");
@@ -98,18 +128,17 @@ export const Create = () => {
         });
 
         uploadedImageUrls = await Promise.all(uploadPromises);
-        console.log("Uploaded image URLs:", uploadedImageUrls);
       }
 
       const postData = {
         post_type: schedulePost.post_type,
         message: schedulePost.message,
         schedule_publish_time: schedulePost.schedule_publish_time,
-        images: uploadedImageUrls,
+        images: [...existingUrls, ...uploadedImageUrls], // <-- combine old and new
       };
 
       const res = await axios.post(
-        "http://localhost:8000/quicksched/schedule",
+        `http://localhost:8000/quicksched/schedule${id ? `/${id}` : ""}`, // <-- conditional URL
         postData
       );
 
@@ -125,7 +154,9 @@ export const Create = () => {
 
   useEffect(() => {
     return () => {
-      selectedFiles.forEach((file) => URL.revokeObjectURL(file));
+      selectedFiles.forEach((file) => {
+        if (file instanceof File) URL.revokeObjectURL(file);
+      });
     };
   }, [selectedFiles]);
 
@@ -155,23 +186,12 @@ export const Create = () => {
 
   return (
     <div className="h-screen flex flex-col justify-between bg-[#eef2f5] px-4 pt-6 pb-24 max-w-sm mx-auto text-gray-800">
-      {/* Top Loading Bar */}
       {loading && (
         <div className="fixed inset-0 bg-transparent z-50 flex items-center justify-center">
-          {/* Bouncing Dots Loader */}
           <div className="flex space-x-2">
-            <div
-              className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0s" }}
-            ></div>
-            <div
-              className="w-3 h-3 bg-green-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.2s" }}
-            ></div>
-            <div
-              className="w-3 h-3 bg-pink-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.4s" }}
-            ></div>
+            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+            <div className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
           </div>
         </div>
       )}
@@ -183,20 +203,11 @@ export const Create = () => {
         />
       )}
 
-      <form
-        onSubmit={onSubmit}
-        className="bg-white rounded-3xl shadow-xl p-6 flex flex-col space-y-6"
-      >
-        {/* Upload Image and Category Section */}
+      <form onSubmit={onSubmit} className="bg-white rounded-3xl shadow-xl p-6 flex flex-col space-y-6">
         <div className="flex gap-2 items-center">
           <label className="w-12 h-12 flex items-center justify-center cursor-pointer bg-purple-600 hover:bg-purple-700 text-white rounded-full">
             <i className="fa-solid fa-upload"></i>
-            <input
-              type="file"
-              multiple
-              onChange={handleFileChange}
-              className="hidden"
-            />
+            <input type="file" multiple onChange={handleFileChange} className="hidden" />
           </label>
 
           <div className="flex-1">
@@ -217,29 +228,25 @@ export const Create = () => {
           className="bg-[#f9fafb] border border-gray-300 rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-400 w-full"
         />
 
-        <ScheduleDate onChange={setScheduleDate} />
+        <ScheduleDate onChange={setScheduleDate} defaultValue={scheduleDate} />
 
         {selectedFiles.length > 0 && (
           <div className="flex gap-3 overflow-x-auto pt-2">
-            {selectedFiles.map((file, index) => (
-              <div
-                key={index}
-                className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 border-purple-300 shadow-md"
-              >
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt="Selected"
-                  className="object-cover w-full h-full"
-                />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveFile(index)}
-                  className="absolute top-1 right-1 text-red-500 hover:text-red-600 w-5 h-5 flex items-center justify-center text-xs cursor-pointer"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
+            {selectedFiles.map((file, index) => {
+              const imageUrl = file instanceof File ? URL.createObjectURL(file) : file;
+              return (
+                <div key={index} className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 border-purple-300 shadow-md">
+                  <img src={imageUrl} alt="Selected" className="object-cover w-full h-full" />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFile(index)}
+                    className="absolute top-1 right-1 text-red-500 hover:text-red-600 w-5 h-5 flex items-center justify-center text-xs cursor-pointer"
+                  >
+                    ✕
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -256,12 +263,10 @@ export const Create = () => {
             type="submit"
             disabled={!isValidSchedule}
             className={`flex-1 font-semibold py-3 rounded-full text-white transition-all ${
-              isValidSchedule
-                ? "bg-purple-500 hover:bg-purple-600"
-                : "bg-gray-300 cursor-not-allowed"
+              isValidSchedule ? "bg-purple-500 hover:bg-purple-600" : "bg-gray-300 cursor-not-allowed"
             }`}
           >
-            {isValidSchedule ? "Schedule Post" : "Invalid Schedule"}
+            {isValidSchedule ? (id ? "Update Post" : "Schedule Post") : "Invalid Schedule"}
           </button>
         </div>
       </form>

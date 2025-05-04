@@ -1,48 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const padZero = (num) => num.toString().padStart(2, "0");
-
-const ScheduleDate = ({ onChange }) => {
+const ScheduleDate = ({ onChange, defaultValue }) => {
   const [showPicker, setShowPicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(defaultValue || null);
 
-  const now = new Date();
-  const [month, setMonth] = useState(now.getMonth());
-  const [day, setDay] = useState(now.getDate());
-  const [hour, setHour] = useState(now.getHours() % 12 || 12);
-  const [minute, setMinute] = useState(now.getMinutes());
-  const [second, setSecond] = useState(now.getSeconds());
-  const [amPm, setAmPm] = useState(now.getHours() >= 12 ? "PM" : "AM");
+  const [month, setMonth] = useState(0);
+  const [day, setDay] = useState(1);
+  const [hour, setHour] = useState(12);
+  const [minute, setMinute] = useState(0);
+  const [second, setSecond] = useState(0);
+  const [amPm, setAmPm] = useState("AM");
 
+  // Define months array
   const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
+    "January",
+    "February",
+    "March",
+    "April",
     "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
-  const daysInMonth = new Date(now.getFullYear(), month + 1, 0).getDate();
 
-  const handleDone = () => {
-    const fullHour = amPm === "PM" ? (hour % 12) + 12 : hour % 12;
-    const date = new Date(
-      now.getFullYear(),
-      month,
-      day,
-      fullHour,
-      minute,
-      second
-    );
+  // Pad zero function
+  const padZero = (num) => (num < 10 ? `0${num}` : num);
+
+  // Populate from defaultValue if editing
+  useEffect(() => {
+    const date = defaultValue ? new Date(defaultValue) : new Date();
     setSelectedDate(date);
+
+    setMonth(date.getMonth());
+    setDay(date.getDate());
+
+    let rawHour = date.getHours();
+    setHour(rawHour % 12 || 12); // Convert to 12-hour format
+    setAmPm(rawHour >= 12 ? "PM" : "AM");
+
+    setMinute(date.getMinutes());
+    setSecond(date.getSeconds());
+  }, [defaultValue]);
+
+  // Define handleDone function
+  const handleDone = () => {
+    const newDate = new Date();
+    newDate.setMonth(month);
+    newDate.setDate(day);
+    newDate.setHours(amPm === "PM" ? hour + 12 : hour);
+    newDate.setMinutes(minute);
+    newDate.setSeconds(second);
+
+    setSelectedDate(newDate);
     setShowPicker(false);
-    onChange && onChange(date);
+
+    if (onChange) {
+      onChange(newDate); // If onChange prop is passed, call it with the new date
+    }
   };
 
   return (
@@ -52,7 +70,20 @@ const ScheduleDate = ({ onChange }) => {
         onClick={() => setShowPicker(true)}
         className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 rounded-full transition mb-4 cursor-pointer"
       >
-        {selectedDate ? selectedDate.toLocaleString() : "Choose Date & Time"}
+        {selectedDate
+          ? selectedDate.toLocaleDateString("en-US", {
+              weekday: "short",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            }) +
+            " " +
+            selectedDate.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })
+          : "Choose Date & Time"}
       </button>
 
       {showPicker && (
@@ -80,13 +111,11 @@ const ScheduleDate = ({ onChange }) => {
                 onChange={(e) => setDay(parseInt(e.target.value))}
                 className="bg-purple-100 p-2 rounded focus:outline-none"
               >
-                {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(
-                  (d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  )
-                )}
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -148,7 +177,7 @@ const ScheduleDate = ({ onChange }) => {
 
               <button
                 type="button"
-                onClick={handleDone}
+                onClick={handleDone} // Now this will call handleDone
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-full font-semibold"
               >
                 Done

@@ -16,7 +16,9 @@ router.route('/schedule/:id').get(getScheduledPostById);
 router.route('/schedule/type/:post_type').get(getScheduledPostByPostType);
 
 // UPDATE - Update a post by ID
+// Note: Using POST instead of PUT for update due to Facebook Graph API limitations
 router.route('/schedule/:id').post(updateScheduledPost);
+
 
 // DELETE - Delete a post by ID
 router.route('/schedule/:id').delete(deleteScheduledPost);
