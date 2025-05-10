@@ -96,7 +96,7 @@ export const Categories = () => {
 
       {/* POSTS */}
       {!loading && (
-        <div className="p-4 max-w-6xl mx-auto mt-10">
+        <div className="p-4 max-w-5xl mx-auto px-12 sm:px-16">
           {filteredPosts.length === 0 ? (
             <div className="bg-gray-100 rounded-lg p-8 text-center shadow-md">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
