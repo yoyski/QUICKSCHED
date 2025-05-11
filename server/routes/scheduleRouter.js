@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { addScheduledPost, getAllScheduledPosts, getScheduledPostById, updateScheduledPost, deleteScheduledPost, getScheduledPostByPostType } from '../controller/scheduleController.js';
+import {addScheduledPost, getAllScheduledPosts, getScheduledPostById, updateScheduledPost, deleteScheduledPost, getScheduledPostByPostType } from '../controller/scheduleController.js';
 
 const router = Router();
 
@@ -8,6 +8,7 @@ router.route('/schedule').post(addScheduledPost);//this is for backend this will
 
 // READ - Get all scheduled posts
 router.route('/schedule').get(getAllScheduledPosts);
+
 
 // READ - Get one post by ID
 router.route('/schedule/:id').get(getScheduledPostById);

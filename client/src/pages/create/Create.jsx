@@ -166,7 +166,7 @@ export const Create = () => {
       const now = new Date();
       const diffMinutes = (selected - now) / (1000 * 60);
 
-      setIsValidSchedule(diffMinutes >= 30);
+      setIsValidSchedule(diffMinutes >= 10);
       setSchedulePost((prev) => ({
         ...prev,
         schedule_publish_time: selected.getTime(),

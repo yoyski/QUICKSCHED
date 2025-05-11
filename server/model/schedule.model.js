@@ -40,6 +40,12 @@ const scheduledPostSchema = new mongoose.Schema(
       type: String,
       default: process.env.ACCESS_TOKEN,
     },
+    fb_post_id: {
+      type: String,
+    },
+    fb_post_id: {
+      type: String,
+    },
   },
   {
     timestamps: true,
