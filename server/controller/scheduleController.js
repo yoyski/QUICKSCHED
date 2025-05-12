@@ -1,4 +1,5 @@
 import ScheduledPost from "../model/schedule.model.js";
+import PostedNotification from "../model/postedNotification.js";
 import axios from "axios";
 import dotenv from "dotenv";
 import cron from "node-cron";
@@ -8,53 +9,30 @@ dotenv.config();
 const pageId = process.env.FB_PAGE_ID;
 const pageAccessToken = process.env.FB_ACCESS_TOKEN;
 
-const cleanupAndPost = async () => {
-  try {
-    const allPosts = await ScheduledPost.find();
+export const checkAndDeletePublishedPosts = async () => {
+  const posts = await ScheduledPost.find({});
 
-    for (const post of allPosts) {
-      const { fb_post_id, _id, schedule_publish_time } = post;
-      if (!fb_post_id || !schedule_publish_time) continue;
+  for (const post of posts) {
+    try {
+      const response = await axios.get(
+        `https://graph.facebook.com/v22.0/${post.fb_post_id}?fields=is_published&access_token=${pageAccessToken}`
+      );
 
-      const currentTime = new Date();
-      const scheduledTime = new Date(schedule_publish_time);
-
-      // Check if the current time is exactly the same as the scheduled time (within the minute)
-      if (
-        currentTime.getMinutes() === scheduledTime.getMinutes() &&
-        currentTime.getHours() === scheduledTime.getHours() &&
-        currentTime.getDate() === scheduledTime.getDate() &&
-        currentTime.getMonth() === scheduledTime.getMonth() &&
-        currentTime.getFullYear() === scheduledTime.getFullYear()
-      ) {
-        try {
-          // Call the Facebook API to check if the post is published
-          const fbResponse = await axios.get(
-            `https://graph.facebook.com/v22.0/${fb_post_id}?fields=is_published&access_token=${pageAccessToken}`
-          );
-
-          // If the post is published, delete it from the database
-          if (fbResponse.data.is_published === true) {
-            await ScheduledPost.findByIdAndDelete(_id);
-            console.log(`Deleted published post at scheduled time: ${_id}`);
-          }
-        } catch (fbError) {
-          console.error(
-            `Error checking FB post ${fb_post_id}:`,
-            fbError?.response?.data || fbError.message
-          );
-        }
+      if (response.data.is_published) {
+        await ScheduledPost.findByIdAndDelete(post._id);
+        console.log(`Deleted published post from DB: ${post._id}`);
       }
+    } catch (error) {
+      console.error(`Error checking post ${post.fb_post_id}:`, error.response?.data || error.message);
     }
-  } catch (error) {
-    console.error("Cleanup failed:", error.message);
   }
 };
 
-// Run the cron job every second
-cron.schedule("* * * * * *", cleanupAndPost);
+cron.schedule("* * * * * *", () => {
+  checkAndDeletePublishedPosts();
+});
 
-
+// Function to schedule the post on Facebook and save it to the database
 export const addScheduledPost = async (req, res) => {
   const { post_type, message, schedule_publish_time, images } = req.body;
 
@@ -79,14 +57,19 @@ export const addScheduledPost = async (req, res) => {
     const attachedMedia = await uploadMultipleImages(images);
 
     // Step 2: Schedule the actual post
-    const scheduledUnixTime = Math.floor(new Date(schedule_publish_time).getTime() / 1000);
-    const fbResponse = await axios.post(`https://graph.facebook.com/v22.0/${pageId}/feed`, {
-      message,
-      attached_media: attachedMedia,
-      published: false,
-      scheduled_publish_time: scheduledUnixTime,
-      access_token: pageAccessToken,
-    });
+    const scheduledUnixTime = Math.floor(
+      new Date(schedule_publish_time).getTime() / 1000
+    );
+    const fbResponse = await axios.post(
+      `https://graph.facebook.com/v22.0/${pageId}/feed`,
+      {
+        message,
+        attached_media: attachedMedia,
+        published: false,
+        scheduled_publish_time: scheduledUnixTime,
+        access_token: pageAccessToken,
+      }
+    );
 
     const fb_post_id = fbResponse.data.id;
 
@@ -112,7 +95,10 @@ export const addScheduledPost = async (req, res) => {
       error: errMsg,
     });
   }
-}; // add a storing deleted data to database store it in postedNotification model make sure the millisecond is always 00 so it will be deleted just clean or change the code later to make sure even not 00 or just change the cron job to every millisecond
+};
+
+
+// add a storing deleted data to database store it in postedNotification model make sure the millisecond is always 00 so it will be deleted just clean or change the code later to make sure even not 00 or just change the cron job to every millisecond
 
 export const getAllScheduledPosts = async (req, res) => {
   try {
