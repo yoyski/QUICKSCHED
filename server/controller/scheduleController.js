@@ -10,25 +10,53 @@ const pageId = process.env.FB_PAGE_ID;
 const pageAccessToken = process.env.FB_ACCESS_TOKEN;
 
 export const checkAndDeletePublishedPosts = async () => {
-  const posts = await ScheduledPost.find({});
+  try {
+    const posts = await ScheduledPost.find({});
+    if (posts.length === 0) return;
 
-  for (const post of posts) {
-    try {
-      const response = await axios.get(
-        `https://graph.facebook.com/v22.0/${post.fb_post_id}?fields=is_published&access_token=${pageAccessToken}`
-      );
+    for (const post of posts) {
+      try {
+        const response = await axios.get(
+          `https://graph.facebook.com/v22.0/${post.fb_post_id}`,
+          {
+            params: {
+              fields: "is_published",
+              access_token: pageAccessToken,
+            },
+          }
+        );
 
-      if (response.data.is_published) {
-        await ScheduledPost.findByIdAndDelete(post._id);
-        console.log(`Deleted published post from DB: ${post._id}`);
+        const { is_published } = response.data;
+
+        if (is_published) {
+          const postNotification = new PostedNotification({
+            post_type: post.post_type,
+            message: post.message,
+            schedule_publish_time: post.schedule_publish_time,
+          });
+
+          await postNotification.save();
+          await ScheduledPost.findByIdAndDelete(post._id);
+
+          console.log(`✅ Post published and removed: ${post._id}`);
+        }
+      } catch (error) {
+        console.error(
+          `❌ Error checking fb_post_id ${post.fb_post_id}:`,
+          error.response?.data || error.message
+        );
       }
-    } catch (error) {
-      console.error(`Error checking post ${post.fb_post_id}:`, error.response?.data || error.message);
     }
+  } catch (err) {
+    console.error(
+      "❌ Global error in checkAndDeletePublishedPosts:",
+      err.message
+    );
   }
 };
 
-cron.schedule("* * * * * *", () => {
+// Cron: every minute
+cron.schedule("* * * * *", () => {
   checkAndDeletePublishedPosts();
 });
 
@@ -97,13 +125,25 @@ export const addScheduledPost = async (req, res) => {
   }
 };
 
-
 // add a storing deleted data to database store it in postedNotification model make sure the millisecond is always 00 so it will be deleted just clean or change the code later to make sure even not 00 or just change the cron job to every millisecond
 
 export const getAllScheduledPosts = async (req, res) => {
   try {
-    const scheduledPosts = await ScheduledPost.find();
+    const scheduledPosts = await ScheduledPost.find().sort({
+      schedule_publish_time: -1,
+    });
     res.status(200).json(scheduledPosts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getAllNotifications = async (req, res) => {
+  try {
+    const notifications = await PostedNotification.find().sort({
+      schedule_publish_time: -1,
+    });
+    res.status(200).json(notifications);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
