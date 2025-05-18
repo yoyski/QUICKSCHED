@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import {addScheduledPost, getAllScheduledPosts, getAllNotifications, getScheduledPostById, updateScheduledPost, deleteScheduledPost, getScheduledPostByPostType } from '../controller/scheduleController.js';
+import {addScheduledPost, getAllScheduledPosts, getAllNotifications, getScheduledPostById, updateScheduledPost, deleteScheduledPost, deleteNotificationPost, getScheduledPostByPostType } from '../controller/scheduleController.js';
 
 const router = Router();
 
@@ -24,7 +24,10 @@ router.route('/schedule/type/:post_type').get(getScheduledPostByPostType);
 router.route('/schedule/:id').post(updateScheduledPost);
 
 
-// DELETE - Delete a post by ID
+// DELETE - Delete a notifications by ID
+router.route('/notifications/:id').delete(deleteNotificationPost);
+
+// DELETE - Delete a notifications by ID
 router.route('/schedule/:id').delete(deleteScheduledPost);
 
 export default router;

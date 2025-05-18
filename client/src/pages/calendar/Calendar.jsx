@@ -38,23 +38,29 @@ const CustomToolbar = ({ date, view, setView, setButtonLoading }) => {
   };
 
   return (
-    <div className="flex justify-between items-center mb-4">
-      <h2 className="text-xl font-semibold">{formattedDate}</h2>
-      <div className="space-x-2">
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+      <h2 className="text-xl sm:text-2xl font-semibold">{formattedDate}</h2>
+      <div className="flex flex-row justify-center md:justify-start space-x-2">
         <button
-          className={`px-4 py-2 rounded-md transition cursor-pointer ${view === "month" ? "bg-purple-600 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded-md transition cursor-pointer ${
+            view === "month" ? "bg-purple-600 text-white" : "bg-gray-200"
+          }`}
           onClick={() => handleViewChange("month")}
         >
           Month
         </button>
         <button
-          className={`px-4 py-2 rounded-md transition cursor-pointer ${view === "week" ? "bg-purple-600 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded-md transition cursor-pointer ${
+            view === "week" ? "bg-purple-600 text-white" : "bg-gray-200"
+          }`}
           onClick={() => handleViewChange("week")}
         >
           Week
         </button>
         <button
-          className={`px-4 py-2 rounded-md transition cursor-pointer ${view === "day" ? "bg-purple-600 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded-md transition cursor-pointer ${
+            view === "day" ? "bg-purple-600 text-white" : "bg-gray-200"
+          }`}
           onClick={() => handleViewChange("day")}
         >
           Day
@@ -123,9 +129,11 @@ export const CalendarPage = () => {
         <div className="h-1 bg-purple-500 animate-pulse transition-all duration-300" />
       )}
 
-      <div className="max-w-7xl mx-auto p-4 mt-10">
-        <h2 className="text-2xl font-semibold mb-4 text-purple-600">📅 Calendar View</h2>
-        <div className="h-[700px] bg-white p-4 rounded-xl shadow border border-gray-200">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 mt-10">
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-purple-600 text-center sm:text-left">
+          📅 Calendar View
+        </h2>
+        <div className="h-[500px] sm:h-[600px] md:h-[700px] bg-white p-2 sm:p-4 rounded-xl shadow border border-gray-200 overflow-hidden">
           <BigCalendar
             localizer={localizer}
             events={events}
@@ -152,8 +160,8 @@ export const CalendarPage = () => {
       </div>
 
       {modalOpen && selectedEventType && (
-        <div className="fixed inset-0 bg-white/30 flex justify-center items-center z-50 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-lg w-full sm:w-96 shadow-lg relative">
+        <div className="fixed inset-0 bg-white/30 flex justify-center items-center z-50 backdrop-blur-sm px-4">
+          <div className="bg-white p-6 rounded-lg w-full sm:w-96 md:w-[500px] lg:w-[600px] shadow-lg relative">
             <button
               className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 cursor-pointer"
               onClick={handleCloseModal}
@@ -166,12 +174,12 @@ export const CalendarPage = () => {
                   <h3 className="text-xl font-semibold mb-4 text-purple-600">
                     {selectedEventType.charAt(0).toUpperCase() + selectedEventType.slice(1)} List
                   </h3>
-                  <div className="max-h-[300px] overflow-y-auto"> {/* Added scrollable list */}
+                  <div className="max-h-[300px] overflow-y-auto">
                     <ul>
                       {filteredPostsByType.map((event, index) => (
                         <li
                           key={index}
-                          className="flex justify-between items-center mb-4 p-2 rounded-lg"
+                          className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 p-2 rounded-lg space-y-2 sm:space-y-0"
                           style={{ backgroundColor: calendarColors[event.post_type] || "#E5E7EB" }}
                         >
                           <div>
@@ -184,14 +192,14 @@ export const CalendarPage = () => {
                             <Link
                               to={`/create/${event._id}`}
                               title="Edit"
-                              className="text-indigo-600 hover:text-indigo-800 transition sm:text-2xl text-lg cursor-pointer"
+                              className="text-indigo-600 hover:text-indigo-800 transition text-lg sm:text-xl"
                             >
                               <i className="fa-solid fa-pen-to-square" />
                             </Link>
                             <button
                               onClick={() => setConfirmDeletePost(event)}
                               title="Delete"
-                              className="text-red-600 hover:text-red-800 transition sm:text-2xl text-lg cursor-pointer"
+                              className="text-red-600 hover:text-red-800 transition text-lg sm:text-xl"
                             >
                               <i className="fa-solid fa-trash" />
                             </button>
@@ -211,7 +219,7 @@ export const CalendarPage = () => {
 
       {confirmDeletePost && (
         <div className="fixed inset-0 z-50 backdrop-blur-sm bg-white/30 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl p-6 shadow-2xl max-w-sm w-full text-center relative">
+          <div className="bg-white rounded-xl p-6 shadow-2xl w-full max-w-xs sm:max-w-sm md:max-w-md text-center relative">
             <button
               className="absolute top-3 right-3 text-gray-400 hover:text-red-600 text-xl cursor-pointer"
               onClick={() => setConfirmDeletePost(null)}
@@ -221,10 +229,10 @@ export const CalendarPage = () => {
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Are you sure you want to delete this post?
             </h3>
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={() => setConfirmDeletePost(null)}
-                className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800 cursor-pointer"
+                className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800"
               >
                 Cancel
               </button>
@@ -249,7 +257,7 @@ export const CalendarPage = () => {
                     console.error("Delete failed:", err);
                   }
                 }}
-                className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white cursor-pointer"
+                className="px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white"
               >
                 Delete
               </button>

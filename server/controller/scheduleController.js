@@ -195,11 +195,25 @@ export const deleteScheduledPost = async (req, res) => {
   try {
     const deletedScheduledPost = await ScheduledPost.findByIdAndDelete(
       req.params.id
-    ); // Find and delete the user by ID
+    );
     if (!deletedScheduledPost) {
-      return res.status(404).json({ message: "User not found" }); // If user not found, send a 404 response
+      return res.status(404).json({ message: "Post not found" });
     }
-    res.json({ message: "User deleted successfully" }); // Send success response
+    res.json({ message: "Post deleted successfully" }); // Send success response
+  } catch (error) {
+    res.status(500).json({ message: error.message }); // Send error response if deletion fails
+  }
+};
+
+export const deleteNotificationPost = async (req, res) => {
+  try {
+    const deletedNotificationPost = await PostedNotification.findByIdAndDelete(
+      req.params.id
+    );
+    if (!deletedNotificationPost) {
+      return res.status(404).json({ message: "Notification not found" }); // If user not found, send a 404 response
+    }
+    res.json({ message: "Notification deleted successfully" }); // Send success response
   } catch (error) {
     res.status(500).json({ message: error.message }); // Send error response if deletion fails
   }

@@ -12,7 +12,8 @@ export const Categories = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [confirmDeletePost, setConfirmDeletePost] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // State for hamburger menu
+
+  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -38,15 +39,15 @@ export const Categories = () => {
   const getPostTypeColor = (category) => {
     switch (category) {
       case "general":
-        return "bg-yellow-200 text-yellow-800 border-yellow-300 hover:bg-yellow-300 hover:text-yellow-900";
+        return "bg-yellow-100 text-yellow-800";
       case "birthday":
-        return "bg-red-200 text-red-800 border-red-300 hover:bg-red-300 hover:text-red-900";
+        return "bg-red-100 text-red-800"; 
       case "event":
-        return "bg-blue-200 text-blue-800 border-blue-300 hover:bg-blue-300 hover:text-blue-900";
+        return "bg-blue-100 text-blue-800";  
       case "holiday":
-        return "bg-green-200 text-green-800 border-green-300 hover:bg-green-300 hover:text-green-900";
+        return "bg-green-100 text-green-800";   
       default:
-        return "bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 hover:text-gray-900";
+        return "bg-gray-100 text-gray-800";     
     }
   };
 
@@ -63,21 +64,22 @@ export const Categories = () => {
   return (
     <>
       <Header />
+
       {/* CATEGORY NAVIGATION */}
-      <div className="w-full px-4 sm:px- md:px-8 mt-15">
-        {/* Category buttons for medium and larger screens */}
-        <div className={`flex flex-wrap justify-center gap-2 sm:gap-3 md:flex`}>
+      <div className="w-full px-4 sm:px-6 md:px-8 mt-16">
+        <div className="flex flex-wrap justify-center gap-3">
           {["general", "birthday", "event", "holiday"].map((category) => (
             <button
               key={category}
               onClick={() => filterByCategory(category)}
-              className={`px-2 sm:px-4 py-1 sm:py-2 rounded-full text-s sm:text-sm font-normal capitalize border transition duration-200 
-                ${selectedCategory === category
-                  ? getPostTypeColor(category)  // Dynamically apply the selected category styles
-                  : "bg-white text-purple-600 border-purple-300 hover:bg-purple-100 hover:text-purple-800"
-              }`}
+              className={`px-3 py-1 rounded-full text-sm font-medium capitalize border transition duration-200 
+                ${
+                  selectedCategory === category
+                    ? getPostTypeColor(category)
+                    : "bg-white text-purple-600 border-purple-300 hover:bg-purple-100 hover:text-purple-800"
+                }`}
             >
-              {category}
+              {capitalize(category)}
             </button>
           ))}
         </div>
@@ -96,12 +98,10 @@ export const Categories = () => {
 
       {/* POSTS */}
       {!loading && (
-        <div className="p-4 max-w-5xl mx-auto px-12 sm:px-16">
+        <div className="p-4 max-w-5xl mx-auto px-4 sm:px-6">
           {filteredPosts.length === 0 ? (
             <div className="bg-gray-100 rounded-lg p-8 text-center shadow-md">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                No posts in this category yet.
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">No posts in this category yet.</h2>
               <p className="text-gray-600 mb-6">You can add a new post for this category.</p>
               <Link to="/create" className="px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700">
                 Create Post
@@ -112,59 +112,63 @@ export const Categories = () => {
               {filteredPosts.map((post) => (
                 <div
                   key={post._id}
-                  className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col shadow-sm hover:shadow-lg transition"
+                  className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col"
                 >
-                  <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-start justify-between mb-3">
                     <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${getPostTypeColor(
-                        post.post_type
-                      )}`}
+                      className={`text-xs font-medium px-2 py-1 rounded-full ${getPostTypeColor(post.post_type)}`}
                     >
-                      {post.post_type}
+                      {capitalize(post.post_type)}
                     </span>
-                    <div className="flex space-x-2">
+                    <div className="flex items-center space-x-2">
                       <Link
                         to={`/create/${post._id}`}
                         title="Edit"
-                        className="text-indigo-600 hover:text-indigo-800 transition text-lg"
+                        className="text-gray-500 hover:text-blue-600 transition text-lg"
                       >
-                        <i className="fa-solid fa-pen-to-square" />
+                        <i className="fa-regular fa-pen-to-square" />
                       </Link>
                       <button
                         onClick={() => setConfirmDeletePost(post)}
                         title="Delete"
-                        className="text-red-600 hover:text-red-800 transition text-lg"
+                        className="text-gray-500 hover:text-red-600 transition text-lg"
                       >
-                        <i className="fa-solid fa-trash" />
+                        <i className="fa-regular fa-trash-can" />
                       </button>
                     </div>
                   </div>
 
                   {post.images?.length > 0 && (
-                    <div className="relative mb-4 cursor-pointer" onClick={() => openModal(post)}>
+                    <div className="relative mb-3 cursor-pointer" onClick={() => openModal(post)}>
                       <img
                         src={post.images[0]}
                         alt="Post preview"
-                        className="w-full h-40 sm:h-48 md:h-56 object-cover rounded-xl border"
+                        className="w-full h-48 object-cover rounded-lg border border-gray-100"
                       />
                       {post.images.length > 1 && (
-                        <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center text-white text-xl font-semibold">
+                        <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center text-white text-lg font-semibold">
                           +{post.images.length - 1}
                         </div>
                       )}
                     </div>
                   )}
 
-                  <p className="text-sm text-gray-700 mb-4 line-clamp-3">{post.message}</p>
-                  <p className="text-xs text-center text-gray-500 mt-auto">
-                    🕒 Scheduled: {format(new Date(post.schedule_publish_time), "PPP p")}
-                  </p>
-                  <button
-                    className="mt-4 text-indigo-600 hover:text-indigo-800 text-sm"
-                    onClick={() => openModal(post)}
-                  >
-                    View
-                  </button>
+                  <div className="flex flex-col justify-between h-full flex-grow">
+                    <div className="mb-2">
+                      <p className="text-sm text-gray-800 line-clamp-2">{post.message}</p>
+                    </div>
+                    <div className="mt-auto">
+                      <p className="text-xs text-gray-500">
+                        🕒 {format(new Date(post.schedule_publish_time), "MMM d, yyyy · h:mm a")}
+                      </p>
+                      <button
+                        className="mt-2 text-sm font-medium text-blue-600 hover:underline"
+                        onClick={() => openModal(post)}
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -184,7 +188,9 @@ export const Categories = () => {
               <i className="fa-solid fa-xmark" />
             </button>
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold capitalize">{selectedPost.post_type}</h3>
+              <h3 className="text-xl font-semibold">
+                {capitalize(selectedPost.post_type)}
+              </h3>
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedPost.message}</p>
               {selectedPost.images?.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">

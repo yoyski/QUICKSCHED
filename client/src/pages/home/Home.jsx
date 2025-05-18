@@ -8,13 +8,15 @@ export const Home = () => {
   const [posts, setPosts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [confirmDeletePost, setConfirmDeletePost] = useState(null); // 🔥 NEW
+  const [confirmDeletePost, setConfirmDeletePost] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/quicksched/schedule");
+        const res = await axios.get(
+          "http://localhost:8000/quicksched/schedule"
+        );
         setPosts(res.data);
       } catch (err) {
         console.error("Failed to fetch scheduled posts:", err);
@@ -29,16 +31,22 @@ export const Home = () => {
   const getPostTypeColor = (postType) => {
     switch (postType) {
       case "general":
-        return "bg-yellow-200 text-yellow-800";
+        return "bg-yellow-100 text-yellow-800";
       case "birthday":
-        return "bg-red-200 text-red-800";
+        return "bg-red-100 text-red-800";
       case "event":
-        return "bg-blue-200 text-blue-800";
+        return "bg-blue-100 text-blue-800";
       case "holiday":
-        return "bg-green-200 text-green-800";
+        return "bg-green-100 text-green-800";
       default:
-        return "bg-gray-200 text-gray-800";
+        return "bg-gray-100 text-gray-800";
     }
+  };
+
+  // Helper function to capitalize first letter
+  const capitalizeFirstLetter = (string) => {
+    if (!string) return "";
+    return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
   const openModal = (post) => {
@@ -55,85 +63,125 @@ export const Home = () => {
     <>
       <Header />
 
-      {/* LOADING ANIMATION */}
+      {/* LOADING */}
       {loading && (
         <div className="fixed inset-0 bg-transparent z-50 flex items-center justify-center">
           <div className="flex space-x-2">
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-            <div className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+            <div
+              className="w-3 h-3 bg-yellow-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-red-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.15s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.3s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-green-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.45s" }}
+            ></div>
           </div>
         </div>
       )}
 
       {/* CONTENT */}
       {!loading && (
-        <div className="p-4 max-w-5xl mx-auto px-12 sm:px-16 mt-20">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {posts.map((post) => (
-              <div
-                key={post._id}
-                className="bg-white border border-gray-200 hover:border-indigo-400 transition-all shadow-md hover:shadow-xl rounded-2xl p-6 flex flex-col"
+        <div className="p-4 max-w-5xl mx-auto px-4 sm:px-6 mt-20">
+          {posts.length === 0 ? (
+            <div className="bg-gray-100 rounded-lg p-8 text-center shadow-md">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                No scheduled posts yet.
+              </h2>
+              <p className="text-gray-600 mb-6">
+                You can create your first scheduled post here.
+              </p>
+              <Link
+                to="/create"
+                className="px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${getPostTypeColor(
-                      post.post_type
-                    )}`}
-                  >
-                    {post.post_type}
-                  </span>
-                  <div className="flex space-x-2">
-                    <Link
-                      to={`/create/${post._id}`}
-                      title="Edit"
-                      className="text-indigo-600 hover:text-indigo-800 transition sm:text-2xl text-lg"
+                Create Post
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post) => (
+                <div
+                  key={post._id}
+                  className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col"
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <span
+                      className={`text-xs font-medium px-2 py-1 rounded-full ${getPostTypeColor(
+                        post.post_type
+                      )}`}
                     >
-                      <i className="fa-solid fa-pen-to-square" />
-                    </Link>
-                    <button
-                      onClick={() => setConfirmDeletePost(post)} // 🔥 Open confirm modal
-                      title="Delete"
-                      className="text-red-600 hover:text-red-800 transition sm:text-2xl text-lg"
+                      {capitalizeFirstLetter(post.post_type)}
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <Link
+                        to={`/create/${post._id}`}
+                        title="Edit"
+                        className="text-gray-500 hover:text-blue-600 transition text-lg"
+                      >
+                        <i className="fa-regular fa-pen-to-square" />
+                      </Link>
+                      <button
+                        onClick={() => setConfirmDeletePost(post)}
+                        title="Delete"
+                        className="text-gray-500 hover:text-red-600 transition text-lg"
+                      >
+                        <i className="fa-regular fa-trash-can" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {post.images?.length > 0 && (
+                    <div
+                      className="relative mb-3 cursor-pointer"
+                      onClick={() => openModal(post)}
                     >
-                      <i className="fa-solid fa-trash" />
-                    </button>
+                      <img
+                        src={post.images[0]}
+                        alt="Post preview"
+                        className="w-full h-48 object-cover rounded-lg border border-gray-100"
+                      />
+                      {post.images.length > 1 && (
+                        <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center text-white text-lg font-semibold">
+                          +{post.images.length - 1}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex flex-col justify-between h-full flex-grow">
+                    <div className="mb-2">
+                      <p className="text-sm text-gray-800 line-clamp-2">
+                        {post.message}
+                      </p>
+                    </div>
+                    <div className="mt-auto">
+                      <p className="text-xs text-gray-500">
+                        🕒{" "}
+                        {format(
+                          new Date(post.schedule_publish_time),
+                          "MMM d, yyyy · h:mm a"
+                        )}
+                      </p>
+                      <button
+                        className="mt-2 text-sm font-medium text-blue-600 hover:underline"
+                        onClick={() => openModal(post)}
+                      >
+                        View
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                {post.images?.length > 0 && (
-                  <div
-                    className="relative mb-4 cursor-pointer"
-                    onClick={() => openModal(post)}
-                  >
-                    <img
-                      src={post.images[0]}
-                      alt="Post preview"
-                      className="w-full h-32 sm:h-48 object-cover rounded-xl border border-gray-100"
-                    />
-                    {post.images.length > 1 && (
-                      <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center text-white text-xl font-semibold">
-                        +{post.images.length - 1}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <p className="text-sm text-gray-700 mb-4 line-clamp-3">{post.message}</p>
-
-                <p className="text-xs text-center text-gray-500 mt-auto">
-                  🕒 Scheduled: {format(new Date(post.schedule_publish_time), "PPP p")}
-                </p>
-
-                <button
-                  className="mt-4 text-indigo-600 hover:text-indigo-800"
-                  onClick={() => openModal(post)}
-                >
-                  View
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -149,8 +197,12 @@ export const Home = () => {
               <i className="fa-solid fa-xmark" />
             </button>
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold capitalize">{selectedPost.post_type}</h3>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedPost.message}</p>
+              <h3 className="text-xl font-semibold">
+                {capitalizeFirstLetter(selectedPost.post_type)}
+              </h3>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                {selectedPost.message}
+              </p>
               {selectedPost.images?.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {selectedPost.images.map((img, idx) => (
@@ -191,8 +243,12 @@ export const Home = () => {
               <button
                 onClick={async () => {
                   try {
-                    await axios.delete(`http://localhost:8000/quicksched/schedule/${confirmDeletePost._id}`);
-                    setPosts((prev) => prev.filter((post) => post._id !== confirmDeletePost._id));
+                    await axios.delete(
+                      `http://localhost:8000/quicksched/schedule/${confirmDeletePost._id}`
+                    );
+                    setPosts((prev) =>
+                      prev.filter((post) => post._id !== confirmDeletePost._id)
+                    );
                     setConfirmDeletePost(null);
                   } catch (err) {
                     console.error("Delete failed:", err);
