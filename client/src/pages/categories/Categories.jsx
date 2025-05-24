@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { Header } from "../../components/header";
-import {
-  fetchAllScheduledPosts,
-  deleteScheduledPost,
-} from "../../apiClient";
+import { fetchAllScheduledPosts, deleteScheduledPost } from "../../apiClient";
+import { AdminContext } from "../../App"; // adjust path if needed
 
 export const Categories = () => {
   const [posts, setPosts] = useState([]);
@@ -15,6 +13,8 @@ export const Categories = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [confirmDeletePost, setConfirmDeletePost] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const { isAdmin } = useContext(AdminContext);
 
   const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -92,18 +92,19 @@ export const Categories = () => {
       {loading && (
         <div className="fixed inset-0 bg-transparent z-50 flex items-center justify-center">
           <div className="flex space-x-2">
+            <div className="w-3 h-3 bg-yellow-400 rounded-full animate-bounce" />
+            <div
+              className="w-3 h-3 bg-red-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.15s" }}
+            />
             <div
               className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0s" }}
-            ></div>
+              style={{ animationDelay: "0.3s" }}
+            />
             <div
               className="w-3 h-3 bg-green-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.2s" }}
-            ></div>
-            <div
-              className="w-3 h-3 bg-pink-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.4s" }}
-            ></div>
+              style={{ animationDelay: "0.45s" }}
+            />
           </div>
         </div>
       )}
@@ -119,12 +120,22 @@ export const Categories = () => {
               <p className="text-gray-600 mb-6">
                 You can add a new post for this category.
               </p>
-              <Link
-                to="/create"
-                className="px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
-              >
-                Create Post
-              </Link>
+              {isAdmin ? (
+                <Link
+                  to="/create"
+                  className="px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
+                >
+                  Create Post
+                </Link>
+              ) : (
+                <button
+                  disabled
+                  className="px-6 py-2 bg-gray-300 text-gray-500 rounded-full cursor-not-allowed"
+                  title="Admin only"
+                >
+                  Create Post
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -142,20 +153,41 @@ export const Categories = () => {
                       {capitalize(post.post_type)}
                     </span>
                     <div className="flex items-center space-x-2">
-                      <Link
-                        to={`/create/${post._id}`}
-                        title="Edit"
-                        className="text-gray-500 hover:text-blue-600 transition text-lg"
-                      >
-                        <i className="fa-regular fa-pen-to-square" />
-                      </Link>
-                      <button
-                        onClick={() => setConfirmDeletePost(post)}
-                        title="Delete"
-                        className="text-gray-500 hover:text-red-600 transition text-lg"
-                      >
-                        <i className="fa-regular fa-trash-can" />
-                      </button>
+                      {isAdmin ? (
+                        <>
+                          <Link
+                            to={`/create/${post._id}`}
+                            title="Edit"
+                            className="text-gray-500 hover:text-blue-600 transition text-lg"
+                          >
+                            <i className="fa-regular fa-pen-to-square" />
+                          </Link>
+                          <button
+                            onClick={() => setConfirmDeletePost(post)}
+                            title="Delete"
+                            className="text-gray-500 hover:text-red-600 transition text-lg"
+                          >
+                            <i className="fa-regular fa-trash-can" />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            disabled
+                            title="Edit (Admin only)"
+                            className="text-gray-300 cursor-not-allowed text-lg"
+                          >
+                            <i className="fa-regular fa-pen-to-square" />
+                          </button>
+                          <button
+                            disabled
+                            title="Delete (Admin only)"
+                            className="text-gray-300 cursor-not-allowed text-lg"
+                          >
+                            <i className="fa-regular fa-trash-can" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
 
@@ -264,6 +296,8 @@ export const Categories = () => {
               <button
                 onClick={async () => {
                   try {
+                    if (!isAdmin) return; // prevent deletion if not admin
+
                     await deleteScheduledPost(confirmDeletePost._id);
                     const updatedPosts = posts.filter(
                       (post) => post._id !== confirmDeletePost._id

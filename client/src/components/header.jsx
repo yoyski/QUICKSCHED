@@ -1,28 +1,111 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import { AdminContext } from "../App";
 
 export const Header = () => {
-  return (
-    <header className="w-full bg-white shadow-md dark:bg-gray-800 fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-        {/* Left side: Logo and Title */}
-        <div className="flex items-center space-x-3">
-          <i className="fa-solid fa-calendar-days text-purple-600 text-xl"></i>
-          <h1 className="text-base font-semibold text-gray-800 dark:text-white">
-            QuickSched
-          </h1>
-        </div>
+  const { isAdmin, setIsAdmin } = useContext(AdminContext);
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
+  const [password, setPassword] = useState("");
 
-        {/* Right side: New Button */}
-        <div>
-          <Link 
-            to="/create"
-            className="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-full hover:bg-purple-700 transition"
-          >
-            Create
-          </Link>
+  const handleToggle = () => {
+    if (isAdmin) {
+      setIsAdmin(false);
+    } else {
+      setShowPasswordInput(true);
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (password === import.meta.env.VITE_ADMIN_PASSWORD) {
+      setIsAdmin(true);
+      setShowPasswordInput(false);
+      setPassword("");
+    } else {
+      alert("Incorrect password.");
+      setPassword("");
+    }
+  };
+
+  return (
+    <>
+      <header className="w-full bg-white dark:bg-gray-900 shadow-md fixed top-0 left-0 right-0 z-50">
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <i className="fa-solid fa-calendar-days text-purple-600 text-xl" />
+            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">QuickSched</h1>
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center gap-4">
+            <Link
+              to="/create"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                isAdmin
+                  ? "bg-purple-600 text-white hover:bg-purple-700"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none"
+              }`}
+            >
+              Create
+            </Link>
+
+            <button
+              onClick={handleToggle}
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                isAdmin
+                  ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              <span className="relative flex items-center">
+                <span
+                  className={`inline-block w-2.5 h-2.5 rounded-full mr-2 ${
+                    isAdmin ? "bg-green-500" : "bg-gray-400"
+                  }`}
+                />
+                {isAdmin ? "Admin Mode" : "Visitor Mode"}
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Password Entry */}
+      {showPasswordInput && !isAdmin && (
+        <div className="fixed top-16 w-full flex justify-center z-40">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg rounded-xl px-6 py-4 flex items-center gap-3"
+          >
+            <input
+              type="password"
+              placeholder="Enter admin password"
+              className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm w-64 dark:bg-gray-700 dark:text-white"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            >
+              Submit
+            </button>
+            <button
+              type="button"
+              className="text-gray-500 hover:text-red-500 text-xl"
+              onClick={() => {
+                setShowPasswordInput(false);
+                setPassword("");
+              }}
+              title="Cancel"
+            >
+              <i className="fa-solid fa-xmark" />
+            </button>
+          </form>
+        </div>
+      )}
+    </>
   );
 };

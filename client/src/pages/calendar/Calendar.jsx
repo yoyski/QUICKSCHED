@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -8,6 +8,7 @@ import {
   fetchAllScheduledPosts,
   deleteScheduledPost,
 } from "../../apiClient"; // Adjust path if needed
+import { AdminContext } from "../../App"; // Import AdminContext
 
 const localizer = momentLocalizer(moment);
 
@@ -74,6 +75,8 @@ const CustomToolbar = ({ date, view, setView, setButtonLoading }) => {
 };
 
 export const CalendarPage = () => {
+  const { isAdmin } = useContext(AdminContext); // get admin state here
+
   const [posts, setPosts] = useState([]);
   const [view, setView] = useState("month");
   const [modalOpen, setModalOpen] = useState(false);
@@ -181,9 +184,9 @@ export const CalendarPage = () => {
                   </h3>
                   <div className="max-h-[300px] overflow-y-auto">
                     <ul>
-                      {filteredPostsByType.map((event, index) => (
+                      {filteredPostsByType.map((event) => (
                         <li
-                          key={index}
+                          key={event._id}
                           className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 p-2 rounded-lg space-y-2 sm:space-y-0"
                           style={{
                             backgroundColor:
@@ -197,20 +200,43 @@ export const CalendarPage = () => {
                             </p>
                           </div>
                           <div className="flex space-x-2">
-                            <Link
-                              to={`/create/${event._id}`}
-                              title="Edit"
-                              className="text-indigo-600 hover:text-indigo-800 transition text-lg sm:text-xl"
-                            >
-                              <i className="fa-solid fa-pen-to-square" />
-                            </Link>
-                            <button
-                              onClick={() => setConfirmDeletePost(event)}
-                              title="Delete"
-                              className="text-red-600 hover:text-red-800 transition text-lg sm:text-xl"
-                            >
-                              <i className="fa-solid fa-trash" />
-                            </button>
+                            {/* Conditionally render edit link */}
+                            {isAdmin ? (
+                              <Link
+                                to={`/create/${event._id}`}
+                                title="Edit"
+                                className="text-indigo-600 hover:text-indigo-800 transition text-lg sm:text-xl"
+                              >
+                                <i className="fa-solid fa-pen-to-square" />
+                              </Link>
+                            ) : (
+                              <button
+                                disabled
+                                title="Edit (Admin only)"
+                                className="text-gray-300 cursor-not-allowed text-lg sm:text-xl"
+                              >
+                                <i className="fa-solid fa-pen-to-square" />
+                              </button>
+                            )}
+
+                            {/* Conditionally render delete button */}
+                            {isAdmin ? (
+                              <button
+                                onClick={() => setConfirmDeletePost(event)}
+                                title="Delete"
+                                className="text-red-600 hover:text-red-800 transition text-lg sm:text-xl"
+                              >
+                                <i className="fa-solid fa-trash" />
+                              </button>
+                            ) : (
+                              <button
+                                disabled
+                                title="Delete (Admin only)"
+                                className="text-gray-300 cursor-not-allowed text-lg sm:text-xl"
+                              >
+                                <i className="fa-solid fa-trash" />
+                              </button>
+                            )}
                           </div>
                         </li>
                       ))}
@@ -225,12 +251,13 @@ export const CalendarPage = () => {
         </div>
       )}
 
-      {confirmDeletePost && (
+      {confirmDeletePost && isAdmin && (
         <div className="fixed inset-0 z-50 backdrop-blur-sm bg-white/30 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 shadow-2xl w-full max-w-xs sm:max-w-sm md:max-w-md text-center relative">
             <button
               className="absolute top-3 right-3 text-gray-400 hover:text-red-600 text-xl cursor-pointer"
               onClick={() => setConfirmDeletePost(null)}
+              aria-label="Close delete confirmation"
             >
               <i className="fa-solid fa-xmark" />
             </button>
@@ -247,13 +274,9 @@ export const CalendarPage = () => {
               <button
                 onClick={async () => {
                   try {
-                    await deleteScheduledPost(confirmDeletePost._id || confirmDeletePost.id);
+                    await deleteScheduledPost(confirmDeletePost._id);
                     setPosts((prevPosts) =>
-                      prevPosts.filter(
-                        (post) =>
-                          post._id !== confirmDeletePost._id &&
-                          post._id !== confirmDeletePost.id
-                      )
+                      prevPosts.filter((post) => post._id !== confirmDeletePost._id)
                     );
                     setConfirmDeletePost(null);
                     setModalOpen(false);

@@ -89,6 +89,9 @@ const ScheduleDate = ({ onChange, defaultValue }) => {
       {showPicker && (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30">
           <div className="bg-white rounded-2xl p-6 w-80 space-y-6 shadow-2xl text-gray-800">
+            <p className="text-sm text-red-500 text-center mb-2">
+              Schedule time must be 10+ mins ahead.
+            </p>
             <h2 className="text-lg font-bold text-purple-600 text-center">
               Pick a Date & Time
             </h2>
