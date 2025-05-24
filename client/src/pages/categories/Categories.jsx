@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import { format } from "date-fns";
 import { Header } from "../../components/header";
+import {
+  fetchAllScheduledPosts,
+  deleteScheduledPost,
+} from "../../apiClient";
 
 export const Categories = () => {
   const [posts, setPosts] = useState([]);
@@ -18,9 +21,9 @@ export const Categories = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/quicksched/schedule");
-        setPosts(res.data);
-        filterByCategory("general", res.data);
+        const data = await fetchAllScheduledPosts();
+        setPosts(data);
+        filterByCategory("general", data);
       } catch (err) {
         console.error("Failed to fetch scheduled posts:", err);
       } finally {
@@ -41,13 +44,13 @@ export const Categories = () => {
       case "general":
         return "bg-yellow-100 text-yellow-800";
       case "birthday":
-        return "bg-red-100 text-red-800"; 
+        return "bg-red-100 text-red-800";
       case "event":
-        return "bg-blue-100 text-blue-800";  
+        return "bg-blue-100 text-blue-800";
       case "holiday":
-        return "bg-green-100 text-green-800";   
+        return "bg-green-100 text-green-800";
       default:
-        return "bg-gray-100 text-gray-800";     
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -89,9 +92,18 @@ export const Categories = () => {
       {loading && (
         <div className="fixed inset-0 bg-transparent z-50 flex items-center justify-center">
           <div className="flex space-x-2">
-            <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0s" }}></div>
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
-            <div className="w-3 h-3 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+            <div
+              className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-green-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.2s" }}
+            ></div>
+            <div
+              className="w-3 h-3 bg-pink-400 rounded-full animate-bounce"
+              style={{ animationDelay: "0.4s" }}
+            ></div>
           </div>
         </div>
       )}
@@ -101,9 +113,16 @@ export const Categories = () => {
         <div className="p-4 max-w-5xl mx-auto px-4 sm:px-6">
           {filteredPosts.length === 0 ? (
             <div className="bg-gray-100 rounded-lg p-8 text-center shadow-md">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">No posts in this category yet.</h2>
-              <p className="text-gray-600 mb-6">You can add a new post for this category.</p>
-              <Link to="/create" className="px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                No posts in this category yet.
+              </h2>
+              <p className="text-gray-600 mb-6">
+                You can add a new post for this category.
+              </p>
+              <Link
+                to="/create"
+                className="px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700"
+              >
                 Create Post
               </Link>
             </div>
@@ -116,7 +135,9 @@ export const Categories = () => {
                 >
                   <div className="flex items-start justify-between mb-3">
                     <span
-                      className={`text-xs font-medium px-2 py-1 rounded-full ${getPostTypeColor(post.post_type)}`}
+                      className={`text-xs font-medium px-2 py-1 rounded-full ${getPostTypeColor(
+                        post.post_type
+                      )}`}
                     >
                       {capitalize(post.post_type)}
                     </span>
@@ -139,7 +160,10 @@ export const Categories = () => {
                   </div>
 
                   {post.images?.length > 0 && (
-                    <div className="relative mb-3 cursor-pointer" onClick={() => openModal(post)}>
+                    <div
+                      className="relative mb-3 cursor-pointer"
+                      onClick={() => openModal(post)}
+                    >
                       <img
                         src={post.images[0]}
                         alt="Post preview"
@@ -155,11 +179,17 @@ export const Categories = () => {
 
                   <div className="flex flex-col justify-between h-full flex-grow">
                     <div className="mb-2">
-                      <p className="text-sm text-gray-800 line-clamp-2">{post.message}</p>
+                      <p className="text-sm text-gray-800 line-clamp-2">
+                        {post.message}
+                      </p>
                     </div>
                     <div className="mt-auto">
                       <p className="text-xs text-gray-500">
-                        🕒 {format(new Date(post.schedule_publish_time), "MMM d, yyyy · h:mm a")}
+                        🕒{" "}
+                        {format(
+                          new Date(post.schedule_publish_time),
+                          "MMM d, yyyy · h:mm a"
+                        )}
                       </p>
                       <button
                         className="mt-2 text-sm font-medium text-blue-600 hover:underline"
@@ -191,7 +221,9 @@ export const Categories = () => {
               <h3 className="text-xl font-semibold">
                 {capitalize(selectedPost.post_type)}
               </h3>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedPost.message}</p>
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                {selectedPost.message}
+              </p>
               {selectedPost.images?.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {selectedPost.images.map((img, idx) => (
@@ -232,8 +264,10 @@ export const Categories = () => {
               <button
                 onClick={async () => {
                   try {
-                    await axios.delete(`http://localhost:8000/quicksched/schedule/${confirmDeletePost._id}`);
-                    const updatedPosts = posts.filter((post) => post._id !== confirmDeletePost._id);
+                    await deleteScheduledPost(confirmDeletePost._id);
+                    const updatedPosts = posts.filter(
+                      (post) => post._id !== confirmDeletePost._id
+                    );
                     setPosts(updatedPosts);
                     filterByCategory(selectedCategory, updatedPosts);
                     setConfirmDeletePost(null);

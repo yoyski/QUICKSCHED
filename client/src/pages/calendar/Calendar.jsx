@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
-import axios from "axios";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Header } from "../../components/header";
 import { Link } from "react-router-dom";
+import {
+  fetchAllScheduledPosts,
+  deleteScheduledPost,
+} from "../../apiClient"; // Adjust path if needed
 
 const localizer = momentLocalizer(moment);
 
@@ -82,8 +85,8 @@ export const CalendarPage = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/quicksched/schedule");
-        setPosts(res.data);
+        const data = await fetchAllScheduledPosts();
+        setPosts(data);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
       } finally {
@@ -172,7 +175,9 @@ export const CalendarPage = () => {
               {filteredPostsByType.length > 0 ? (
                 <>
                   <h3 className="text-xl font-semibold mb-4 text-purple-600">
-                    {selectedEventType.charAt(0).toUpperCase() + selectedEventType.slice(1)} List
+                    {selectedEventType.charAt(0).toUpperCase() +
+                      selectedEventType.slice(1)}{" "}
+                    List
                   </h3>
                   <div className="max-h-[300px] overflow-y-auto">
                     <ul>
@@ -180,7 +185,10 @@ export const CalendarPage = () => {
                         <li
                           key={index}
                           className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 p-2 rounded-lg space-y-2 sm:space-y-0"
-                          style={{ backgroundColor: calendarColors[event.post_type] || "#E5E7EB" }}
+                          style={{
+                            backgroundColor:
+                              calendarColors[event.post_type] || "#E5E7EB",
+                          }}
                         >
                           <div>
                             <p className="font-semibold">{event.message}</p>
@@ -239,11 +247,7 @@ export const CalendarPage = () => {
               <button
                 onClick={async () => {
                   try {
-                    await axios.delete(
-                      `http://localhost:8000/quicksched/schedule/${
-                        confirmDeletePost._id || confirmDeletePost.id
-                      }`
-                    );
+                    await deleteScheduledPost(confirmDeletePost._id || confirmDeletePost.id);
                     setPosts((prevPosts) =>
                       prevPosts.filter(
                         (post) =>

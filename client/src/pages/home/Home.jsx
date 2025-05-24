@@ -1,8 +1,8 @@
 import { Header } from "../../components/header";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import { format } from "date-fns";
+import { fetchAllScheduledPosts, deleteScheduledPost } from "../../apiClient";
 
 export const Home = () => {
   const [posts, setPosts] = useState([]);
@@ -14,10 +14,8 @@ export const Home = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:8000/quicksched/schedule"
-        );
-        setPosts(res.data);
+        const data = await fetchAllScheduledPosts();
+        setPosts(data);
       } catch (err) {
         console.error("Failed to fetch scheduled posts:", err);
       } finally {
@@ -243,9 +241,7 @@ export const Home = () => {
               <button
                 onClick={async () => {
                   try {
-                    await axios.delete(
-                      `http://localhost:8000/quicksched/schedule/${confirmDeletePost._id}`
-                    );
+                    await deleteScheduledPost(confirmDeletePost._id);
                     setPosts((prev) =>
                       prev.filter((post) => post._id !== confirmDeletePost._id)
                     );

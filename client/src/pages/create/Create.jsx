@@ -1,10 +1,15 @@
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CategoriesPostType from "../../components/categoriesPostType";
 import ScheduleDate from "../../components/scheduleDate";
 import { UnsavedChangesWarning } from "../../components/unsavedChangesWarning";
-import axios from "axios";
+
+// Import your API client functions
+import {
+  fetchScheduledPostById,
+  createScheduledPost,
+  updateScheduledPost,
+} from "../../apiClient";
 
 export const Create = () => {
   const { id } = useParams();
@@ -24,14 +29,12 @@ export const Create = () => {
     schedule_publish_time: null,
   });
 
+  // Fetch existing post if editing (id present)
   useEffect(() => {
     if (id) {
       const fetchPost = async () => {
         try {
-          const res = await axios.get(
-            `http://localhost:8000/quicksched/schedule/${id}`
-          );
-          const post = res.data;
+          const post = await fetchScheduledPostById(id);
           setSchedulePost({
             post_type: post.post_type,
             message: post.message,
@@ -50,6 +53,7 @@ export const Create = () => {
     }
   }, [id]);
 
+  // Progress bar animation while loading
   useEffect(() => {
     let interval;
     if (loading) {
@@ -109,11 +113,13 @@ export const Create = () => {
     try {
       let uploadedImageUrls = [];
 
+      // Separate new files from existing URLs
       const newFiles = selectedFiles.filter((file) => file instanceof File);
       const existingUrls = selectedFiles.filter(
         (file) => typeof file === "string"
       );
 
+      // Upload new files to Cloudinary
       if (newFiles.length > 0) {
         const uploadPromises = newFiles.map(async (file) => {
           const data = new FormData();
@@ -121,17 +127,21 @@ export const Create = () => {
           data.append("upload_preset", "quicksched_cloudinary");
           data.append("cloud_name", "daxtqkkj5");
 
-          const cloudinaryRes = await axios.post(
+          const cloudinaryRes = await fetch(
             "https://api.cloudinary.com/v1_1/daxtqkkj5/image/upload",
-            data
+            {
+              method: "POST",
+              body: data,
+            }
           );
-
-          return cloudinaryRes.data.url;
+          const json = await cloudinaryRes.json();
+          return json.url;
         });
 
         uploadedImageUrls = await Promise.all(uploadPromises);
       }
 
+      // Prepare post data to send to backend
       const postData = {
         post_type: schedulePost.post_type,
         message: schedulePost.message,
@@ -139,12 +149,16 @@ export const Create = () => {
         images: [...existingUrls, ...uploadedImageUrls],
       };
 
-      const res = await axios.post(
-        `http://localhost:8000/quicksched/schedule${id ? `/${id}` : ""}`,
-        postData
-      );
+      let res;
+      if (id) {
+        // Update existing post
+        res = await updateScheduledPost(id, postData);
+      } else {
+        // Create new post
+        res = await createScheduledPost(postData);
+      }
 
-      console.log("Upload response:", res.data);
+      console.log("Upload response:", res);
       navigate("/");
     } catch (error) {
       console.error("Error creating scheduled post:", error);
@@ -155,6 +169,7 @@ export const Create = () => {
   };
 
   useEffect(() => {
+    // Cleanup object URLs for new files when component unmounts or selectedFiles changes
     return () => {
       selectedFiles.forEach((file) => {
         if (file instanceof File) URL.revokeObjectURL(file);
@@ -162,6 +177,7 @@ export const Create = () => {
     };
   }, [selectedFiles]);
 
+  // Validate scheduleDate and update schedulePost accordingly
   useEffect(() => {
     if (scheduleDate) {
       const selected = new Date(scheduleDate);
@@ -289,22 +305,22 @@ export const Create = () => {
           <button
             type="button"
             onClick={handleBack}
-            className="flex-1 py-2 rounded-full border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100 transition"
+            className="flex-1 bg-gray-400 hover:bg-gray-500 text-white rounded-md py-2 transition"
           >
-            ← Back
+            Back
           </button>
 
           <button
             type="submit"
-            disabled={!isValidSchedule || schedulePost.message.trim() === ""}
             onClick={onSubmit}
-            className={`flex-1 py-2 rounded-full text-white font-semibold transition ${
-              isValidSchedule && schedulePost.message.trim() !== ""
-                ? "bg-purple-600 hover:bg-purple-700"
-                : "bg-purple-300 cursor-not-allowed"
-            }`}
+            disabled={loading || !isValidSchedule || !schedulePost.message.trim()}
+            className={`flex-1 rounded-md py-2 text-white ${
+              loading || !isValidSchedule || !schedulePost.message.trim()
+                ? "bg-purple-300 cursor-not-allowed"
+                : "bg-purple-600 hover:bg-purple-700"
+            } transition`}
           >
-            {id ? "Update Post" : "Schedule Post"}
+            {loading ? "Saving..." : id ? "Update" : "Create"}
           </button>
         </div>
       </div>

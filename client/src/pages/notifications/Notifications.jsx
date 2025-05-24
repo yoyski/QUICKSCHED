@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Header } from "../../components/header";
-import axios from "axios";
+import { fetchNotifications, deleteNotificationPost } from "../../apiClient";
 import { format } from "date-fns";
 
 export const Notifications = () => {
@@ -10,21 +10,20 @@ export const Notifications = () => {
   const [expandedIds, setExpandedIds] = useState([]);
 
   useEffect(() => {
-    const fetchNotifications = async () => {
+    const loadNotifications = async () => {
       try {
-        const res = await axios.get("http://localhost:8000/quicksched/notifications");
-        setNotifications(res.data);
+        const data = await fetchNotifications();
+        setNotifications(data);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
     };
-
-    fetchNotifications();
+    loadNotifications();
   }, []);
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/quicksched/notifications/${id}`);
+      await deleteNotificationPost(id);
       setNotifications((prev) => prev.filter((n) => n._id !== id));
       setConfirmDelete(null);
     } catch (err) {
@@ -34,11 +33,7 @@ export const Notifications = () => {
 
   const handleBulkDelete = async () => {
     try {
-      await Promise.all(
-        selectedIds.map((id) =>
-          axios.delete(`http://localhost:8000/quicksched/notifications/${id}`)
-        )
-      );
+      await Promise.all(selectedIds.map((id) => deleteNotificationPost(id)));
       setNotifications((prev) => prev.filter((n) => !selectedIds.includes(n._id)));
       setSelectedIds([]);
     } catch (err) {
