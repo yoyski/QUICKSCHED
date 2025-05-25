@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { AdminContext } from "../App";
+import logo from "../assets/logo.png";
 
 export const Header = () => {
   const { isAdmin, setIsAdmin } = useContext(AdminContext);
@@ -58,11 +59,8 @@ export const Header = () => {
       <header className="w-full bg-white dark:bg-gray-900 shadow-md fixed top-0 left-0 right-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <i className="fa-solid fa-calendar-days text-purple-600 text-xl" />
-            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">
-              QuickSched
-            </h1>
+          <div className="h-10 flex items-center -mt-2">
+            <img src={logo} alt="Logo" className="h-16 object-contain" />
           </div>
 
           {/* Toggle Mode Button */}
