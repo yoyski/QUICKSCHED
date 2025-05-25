@@ -18,14 +18,14 @@ export default defineConfig({
         theme_color: '#4f46e5',
         icons: [
   {
-    src: 'icons/logo.jpg',
+    src: 'icons/logo.png',
     sizes: '192x192',
-    type: 'image/jpg',
+    type: 'image/png',
   },
   {
-    src: 'icons/logo.jpg',
+    src: 'icons/logo.png',
     sizes: '512x512',
-    type: 'image/jpg',
+    type: 'image/png',
   },
 ]
 
