@@ -4,10 +4,7 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Header } from "../../components/header";
 import { Link } from "react-router-dom";
-import {
-  fetchAllScheduledPosts,
-  deleteScheduledPost,
-} from "../../apiClient"; // Adjust path if needed
+import { fetchAllScheduledPosts, deleteScheduledPost } from "../../apiClient"; // Adjust path if needed
 import { AdminContext } from "../../App"; // Import AdminContext
 
 const localizer = momentLocalizer(moment);
@@ -135,7 +132,7 @@ export const CalendarPage = () => {
         <div className="h-1 bg-purple-500 animate-pulse transition-all duration-300" />
       )}
 
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 mt-10">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 mt-12">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-purple-600 text-center sm:text-left">
           Calendar View
         </h2>
@@ -196,7 +193,8 @@ export const CalendarPage = () => {
                           <div>
                             <p className="font-semibold">{event.message}</p>
                             <p className="text-sm text-gray-500">
-                              Scheduled: {formatScheduleTime(event.schedule_publish_time)}
+                              Scheduled:{" "}
+                              {formatScheduleTime(event.schedule_publish_time)}
                             </p>
                           </div>
                           <div className="flex space-x-2">
@@ -276,7 +274,9 @@ export const CalendarPage = () => {
                   try {
                     await deleteScheduledPost(confirmDeletePost._id);
                     setPosts((prevPosts) =>
-                      prevPosts.filter((post) => post._id !== confirmDeletePost._id)
+                      prevPosts.filter(
+                        (post) => post._id !== confirmDeletePost._id
+                      )
                     );
                     setConfirmDeletePost(null);
                     setModalOpen(false);
