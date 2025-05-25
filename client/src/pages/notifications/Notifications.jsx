@@ -76,24 +76,37 @@ export const Notifications = () => {
             </div>
           ) : (
             <>
-              {/* Title + Select All toggle */}
+              {/* Title + Actions */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-800">Notifications</h2>
-                {notifications.length > 0 && (
-                  <button
-                    onClick={toggleSelectAll}
-                    disabled={!isAdmin}
-                    className={`text-sm font-medium hover:underline ${
-                      isAdmin
-                        ? "text-purple-600 cursor-pointer"
-                        : "text-gray-400 cursor-not-allowed hover:underline:none"
-                    }`}
-                    title={isAdmin ? undefined : "Admin mode required to select all"}
-                    tabIndex={isAdmin ? 0 : -1}
-                  >
-                    {selectAll ? "Unselect All" : "Select All"}
-                  </button>
-                )}
+                <div className="flex items-center gap-4">
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={toggleSelectAll}
+                      disabled={!isAdmin}
+                      className={`text-sm font-medium hover:underline ${
+                        isAdmin
+                          ? "text-purple-600 cursor-pointer"
+                          : "text-gray-400 cursor-not-allowed hover:underline:none"
+                      }`}
+                      title={isAdmin ? undefined : "Admin mode required to select all"}
+                      tabIndex={isAdmin ? 0 : -1}
+                    >
+                      {selectAll ? "Unselect All" : "Select All"}
+                    </button>
+                  )}
+
+                  {isAdmin && selectedIds.length > 0 && (
+                    <button
+                      onClick={() => setConfirmDeleteNotification({ multiple: true })}
+                      className="text-sm font-medium text-red-600 hover:underline"
+                      title="Delete selected notifications"
+                    >
+                      <i className="fa-regular fa-trash-can mr-1" />
+                      Delete Selected
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Notifications List */}
@@ -190,7 +203,9 @@ export const Notifications = () => {
               <i className="fa-solid fa-xmark" />
             </button>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Are you sure you want to delete this notification?
+              {confirmDeleteNotification?.multiple
+                ? "Are you sure you want to delete all selected notifications?"
+                : "Are you sure you want to delete this notification?"}
             </h3>
             <div className="flex justify-center gap-4">
               <button
@@ -202,15 +217,27 @@ export const Notifications = () => {
               <button
                 onClick={async () => {
                   try {
-                    await deleteNotificationPost(confirmDeleteNotification._id);
-                    setNotifications((prev) =>
-                      prev.filter((n) => n._id !== confirmDeleteNotification._id)
-                    );
+                    if (confirmDeleteNotification?.multiple) {
+                      // Bulk delete
+                      await Promise.all(
+                        selectedIds.map((id) => deleteNotificationPost(id))
+                      );
+                      setNotifications((prev) =>
+                        prev.filter((n) => !selectedIds.includes(n._id))
+                      );
+                      setSelectedIds([]);
+                    } else {
+                      // Single delete
+                      await deleteNotificationPost(confirmDeleteNotification._id);
+                      setNotifications((prev) =>
+                        prev.filter((n) => n._id !== confirmDeleteNotification._id)
+                      );
+                      setSelectedIds((prev) =>
+                        prev.filter((id) => id !== confirmDeleteNotification._id)
+                      );
+                    }
+
                     setConfirmDeleteNotification(null);
-                    // Also remove from selectedIds if selected
-                    setSelectedIds((prev) =>
-                      prev.filter((id) => id !== confirmDeleteNotification._id)
-                    );
                   } catch (err) {
                     console.error("Delete failed:", err);
                   }
