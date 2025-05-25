@@ -6,7 +6,7 @@ export const Header = () => {
   const { isAdmin, setIsAdmin } = useContext(AdminContext);
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(""); // For error message
+  const [error, setError] = useState("");
   const inputRef = useRef(null);
 
   const handleToggle = () => {
@@ -26,7 +26,7 @@ export const Header = () => {
       setPassword("");
       setError("");
     } else {
-      setError("Incorrect password. Please try again."); // Show error instead of alert
+      setError("Incorrect password. Please try again.");
       setPassword("");
       if (inputRef.current) {
         inputRef.current.focus();
@@ -34,14 +34,12 @@ export const Header = () => {
     }
   };
 
-  // Focus input when it shows
   useEffect(() => {
     if (showPasswordInput && inputRef.current) {
       inputRef.current.focus();
     }
   }, [showPasswordInput]);
 
-  // Close on Escape key
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") {
@@ -56,7 +54,7 @@ export const Header = () => {
 
   return (
     <>
-      <header className="w-full bg-white dark:bg-gray-900 shadow-md fixed top-0 left-0 right-0 z-50">
+      <header className="w-full bg-gray-900 text-white shadow-md fixed top-0 left-0 right-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           {/* Logo */}
           <div className="h-10 flex items-center -mt-2">
@@ -69,14 +67,14 @@ export const Header = () => {
               onClick={handleToggle}
               className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 isAdmin
-                  ? "bg-purple-100 text-purple-700 hover:bg-purple-200"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-purple-800 text-purple-300 hover:bg-purple-700"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
               }`}
             >
               <span className="relative flex items-center">
                 <span
                   className={`inline-block w-2.5 h-2.5 rounded-full mr-2 ${
-                    isAdmin ? "bg-green-500" : "bg-gray-400"
+                    isAdmin ? "bg-green-500" : "bg-gray-500"
                   }`}
                 />
                 {isAdmin ? "Admin Mode" : "Visitor Mode"}
@@ -91,13 +89,13 @@ export const Header = () => {
         <div className="fixed top-16 w-full flex justify-center z-40 px-4">
           <form
             onSubmit={handleSubmit}
-            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg rounded-xl px-6 py-4 flex flex-wrap gap-2 max-w-md w-full"
+            className="bg-gray-800 border border-gray-700 shadow-lg rounded-xl px-6 py-4 flex flex-wrap gap-2 max-w-md w-full"
           >
             <input
               type="password"
               ref={inputRef}
               placeholder="Enter admin password"
-              className="flex-grow min-w-[150px] px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:bg-gray-700 dark:text-white"
+              className="flex-grow min-w-[150px] px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm bg-gray-700 text-white"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
@@ -118,7 +116,7 @@ export const Header = () => {
 
               <button
                 type="button"
-                className="text-gray-500 hover:text-red-500 text-xl"
+                className="text-gray-400 hover:text-red-500 text-xl"
                 onClick={() => {
                   setShowPasswordInput(false);
                   setPassword("");
@@ -130,7 +128,6 @@ export const Header = () => {
               </button>
             </div>
 
-            {/* Inline error message below input, full width */}
             {error && (
               <p
                 id="password-error"
