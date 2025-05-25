@@ -30,7 +30,6 @@ export const Create = () => {
     schedule_publish_time: null,
   });
 
-  // Disable scrolling when modal is shown (visitor mode)
   useEffect(() => {
     document.body.style.overflow = isAdmin ? "auto" : "hidden";
     return () => {
@@ -38,7 +37,6 @@ export const Create = () => {
     };
   }, [isAdmin]);
 
-  // Fetch existing post if editing and isAdmin
   useEffect(() => {
     if (id && isAdmin) {
       const fetchPost = async () => {
@@ -92,7 +90,9 @@ export const Create = () => {
   };
 
   const handleRemoveFile = (indexToRemove) => {
-    setSelectedFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
+    setSelectedFiles((prev) =>
+      prev.filter((_, index) => index !== indexToRemove)
+    );
   };
 
   const onSubmit = async (e) => {
@@ -104,7 +104,9 @@ export const Create = () => {
       let uploadedImageUrls = [];
 
       const newFiles = selectedFiles.filter((file) => file instanceof File);
-      const existingUrls = selectedFiles.filter((file) => typeof file === "string");
+      const existingUrls = selectedFiles.filter(
+        (file) => typeof file === "string"
+      );
 
       if (newFiles.length > 0) {
         const uploadPromises = newFiles.map(async (file) => {
@@ -113,10 +115,13 @@ export const Create = () => {
           data.append("upload_preset", "quicksched_cloudinary");
           data.append("cloud_name", "daxtqkkj5");
 
-          const res = await fetch("https://api.cloudinary.com/v1_1/daxtqkkj5/image/upload", {
-            method: "POST",
-            body: data,
-          });
+          const res = await fetch(
+            "https://api.cloudinary.com/v1_1/daxtqkkj5/image/upload",
+            {
+              method: "POST",
+              body: data,
+            }
+          );
           const json = await res.json();
           return json.url;
         });
@@ -171,24 +176,19 @@ export const Create = () => {
   }, [scheduleDate]);
 
   const handleBack = () => {
-    if (schedulePost.message.trim() !== "" || selectedFiles.length > 0) {
-      navigate("/");
-    } else {
-      navigate("/");
-    }
+    navigate("/");
   };
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 px-2 flex justify-center">
       <div className="w-full max-w-lg bg-white rounded-lg shadow-md p-3 flex flex-col space-y-4 mt-4 relative">
-        {loading && (
-          <div className="fixed inset-0 bg-transparent z-50 flex items-center justify-center">
-            <div className="flex space-x-2">
-              <div className="w-3 h-3 bg-yellow-400 rounded-full animate-bounce" />
-              <div className="w-3 h-3 bg-red-400 rounded-full animate-bounce" style={{ animationDelay: "0.15s" }} />
-              <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0.3s" }} />
-              <div className="w-3 h-3 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: "0.45s" }} />
-            </div>
+        {/* Progress Bar at Top */}
+        {progress > 0 && (
+          <div className="absolute top-0 left-0 w-full bg-gray-200 rounded-t-md overflow-hidden h-1 z-50">
+            <div
+              className="bg-purple-600 h-1 transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         )}
 
@@ -197,7 +197,7 @@ export const Create = () => {
             <div className="flex items-center gap-3">
               <label
                 htmlFor="file-upload"
-                className="cursor-pointer bg-purple-600 hover:bg-purple-700 text-white p-2 rounded-full transition"
+                className="cursor-pointer bg-purple-600 hover:bg-purple-700 text-white w-10 h-10 flex items-center justify-center rounded-full transition"
               >
                 <i className="fa-solid fa-camera" />
                 <input
@@ -228,12 +228,16 @@ export const Create = () => {
               className="w-full resize-none rounded-lg border border-gray-300 px-3 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
 
-            <ScheduleDate onChange={setScheduleDate} defaultValue={scheduleDate} />
+            <ScheduleDate
+              onChange={setScheduleDate}
+              defaultValue={scheduleDate}
+            />
 
             {selectedFiles.length > 0 && (
               <div className="flex space-x-3 overflow-x-auto pt-1 pb-1">
                 {selectedFiles.map((file, index) => {
-                  const imageUrl = file instanceof File ? URL.createObjectURL(file) : file;
+                  const imageUrl =
+                    file instanceof File ? URL.createObjectURL(file) : file;
                   return (
                     <div
                       key={index}
@@ -269,7 +273,9 @@ export const Create = () => {
               <button
                 type="submit"
                 onClick={onSubmit}
-                disabled={loading || !isValidSchedule || !schedulePost.message.trim()}
+                disabled={
+                  loading || !isValidSchedule || !schedulePost.message.trim()
+                }
                 className={`flex-1 rounded-md py-2 text-white ${
                   loading || !isValidSchedule || !schedulePost.message.trim()
                     ? "bg-gray-400 cursor-not-allowed"
@@ -279,15 +285,6 @@ export const Create = () => {
                 {id ? "Update" : "Schedule"}
               </button>
             </div>
-
-            {progress > 0 && (
-              <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
-                <div
-                  className="bg-purple-600 h-1 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            )}
           </>
         ) : (
           <div className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm">

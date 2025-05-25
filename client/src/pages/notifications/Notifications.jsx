@@ -8,6 +8,8 @@ export const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [confirmDeleteNotification, setConfirmDeleteNotification] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
   const { isAdmin } = useContext(AdminContext);
 
   useEffect(() => {
@@ -23,6 +25,17 @@ export const Notifications = () => {
     };
     loadNotifications();
   }, []);
+
+  const toggleSelectAll = () => {
+    if (selectAll) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(notifications.map((n) => n._id));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const isSelected = (id) => selectedIds.includes(id);
 
   return (
     <>
@@ -62,67 +75,105 @@ export const Notifications = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {notifications.map((notif) => {
-                let bgColor = "bg-gray-100 text-gray-800";
-                const letter = notif.post_type?.charAt(0).toUpperCase() || "N";
-                if (letter === "G") {
-                  bgColor = "bg-yellow-100 text-yellow-800";
-                } else if (letter === "B") {
-                  bgColor = "bg-red-100 text-red-800";
-                } else if (letter === "E") {
-                  bgColor = "bg-blue-100 text-blue-800";
-                } else if (letter === "H") {
-                  bgColor = "bg-green-100 text-green-800";
-                }
-
-                return (
-                  <div
-                    key={notif._id}
-                    className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex items-start justify-between max-h-32"
+            <>
+              {/* Title + Select All toggle */}
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">Notifications</h2>
+                {notifications.length > 0 && (
+                  <button
+                    onClick={toggleSelectAll}
+                    disabled={!isAdmin}
+                    className={`text-sm font-medium hover:underline ${
+                      isAdmin
+                        ? "text-purple-600 cursor-pointer"
+                        : "text-gray-400 cursor-not-allowed hover:underline:none"
+                    }`}
+                    title={isAdmin ? undefined : "Admin mode required to select all"}
+                    tabIndex={isAdmin ? 0 : -1}
                   >
-                    <div className="flex items-center gap-4 overflow-hidden">
-                      <span
-                        className={`text-xs font-medium px-3 py-1 rounded-full ${bgColor}`}
-                      >
-                        {letter}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-sm text-gray-800 truncate whitespace-nowrap overflow-hidden w-72 sm:w-96 md:w-[30rem] lg:w-[40rem]">
-                          {notif.message}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          🕒{" "}
-                          {format(
-                            new Date(notif.schedule_publish_time),
-                            "MMM d, yyyy · h:mm a"
-                          )}
-                        </p>
-                      </div>
-                    </div>
+                    {selectAll ? "Unselect All" : "Select All"}
+                  </button>
+                )}
+              </div>
 
-                    <button
-                      onClick={() => {
-                        if (isAdmin) {
-                          setConfirmDeleteNotification(notif);
-                        } else {
-                          alert("You need to be in Admin Mode to delete notifications.");
-                        }
-                      }}
-                      title="Delete"
-                      className={`text-lg ${
-                        isAdmin
-                          ? "text-gray-500 hover:text-red-600 cursor-pointer"
-                          : "text-gray-300 cursor-not-allowed"
-                      }`}
-                      disabled={!isAdmin}
+              {/* Notifications List */}
+              <div className="space-y-4">
+                {notifications.map((notif) => {
+                  let bgColor = "bg-gray-100 text-gray-800";
+                  const letter = notif.post_type?.charAt(0).toUpperCase() || "N";
+                  if (letter === "G") {
+                    bgColor = "bg-yellow-100 text-yellow-800";
+                  } else if (letter === "B") {
+                    bgColor = "bg-red-100 text-red-800";
+                  } else if (letter === "E") {
+                    bgColor = "bg-blue-100 text-blue-800";
+                  } else if (letter === "H") {
+                    bgColor = "bg-green-100 text-green-800";
+                  }
+
+                  return (
+                    <div
+                      key={notif._id}
+                      className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex items-start justify-between max-h-32"
                     >
-                      <i className="fa-regular fa-trash-can" />
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
+                      <div className="flex items-center gap-4 overflow-hidden">
+                        {isAdmin && (
+                          <input
+                            type="checkbox"
+                            checked={isSelected(notif._id)}
+                            onChange={() => {
+                              setSelectedIds((prev) =>
+                                isSelected(notif._id)
+                                  ? prev.filter((id) => id !== notif._id)
+                                  : [...prev, notif._id]
+                              );
+                            }}
+                            className="accent-purple-600 w-4 h-4"
+                          />
+                        )}
+
+                        <span
+                          className={`text-xs font-medium px-3 py-1 rounded-full ${bgColor}`}
+                        >
+                          {letter}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm text-gray-800 truncate whitespace-nowrap overflow-hidden w-72 sm:w-96 md:w-[30rem] lg:w-[40rem]">
+                            {notif.message}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            🕒{" "}
+                            {format(
+                              new Date(notif.schedule_publish_time),
+                              "MMM d, yyyy · h:mm a"
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          if (isAdmin) {
+                            setConfirmDeleteNotification(notif);
+                          } else {
+                            alert("You need to be in Admin Mode to delete notifications.");
+                          }
+                        }}
+                        title="Delete"
+                        className={`text-lg ${
+                          isAdmin
+                            ? "text-gray-500 hover:text-red-600 cursor-pointer"
+                            : "text-gray-300 cursor-not-allowed"
+                        }`}
+                        disabled={!isAdmin}
+                      >
+                        <i className="fa-regular fa-trash-can" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       )}
@@ -156,6 +207,10 @@ export const Notifications = () => {
                       prev.filter((n) => n._id !== confirmDeleteNotification._id)
                     );
                     setConfirmDeleteNotification(null);
+                    // Also remove from selectedIds if selected
+                    setSelectedIds((prev) =>
+                      prev.filter((id) => id !== confirmDeleteNotification._id)
+                    );
                   } catch (err) {
                     console.error("Delete failed:", err);
                   }

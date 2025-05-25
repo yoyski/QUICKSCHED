@@ -137,7 +137,7 @@ export const CalendarPage = () => {
 
       <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 mt-10">
         <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-purple-600 text-center sm:text-left">
-          📅 Calendar View
+          Calendar View
         </h2>
         <div className="h-[500px] sm:h-[600px] md:h-[700px] bg-white p-2 sm:p-4 rounded-xl shadow border border-gray-200 overflow-hidden">
           <BigCalendar
