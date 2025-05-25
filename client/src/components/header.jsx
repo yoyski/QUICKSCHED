@@ -9,6 +9,14 @@ export const Header = () => {
   const [error, setError] = useState(""); // For error message
   const inputRef = useRef(null);
 
+  // Force dark mode globally by adding 'dark' class to <html>
+  useEffect(() => {
+    document.documentElement.classList.add("dark");
+    return () => {
+      document.documentElement.classList.remove("dark");
+    };
+  }, []);
+
   const handleToggle = () => {
     if (isAdmin) {
       setIsAdmin(false);
@@ -26,7 +34,7 @@ export const Header = () => {
       setPassword("");
       setError("");
     } else {
-      setError("Incorrect password. Please try again."); // Show error instead of alert
+      setError("Incorrect password. Please try again.");
       setPassword("");
       if (inputRef.current) {
         inputRef.current.focus();

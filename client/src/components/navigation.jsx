@@ -9,26 +9,17 @@ export const Navigation = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
-      if (currentScrollY > lastScrollY.current) {
-        // Scrolling down
-        setVisible(false);
-      } else {
-        // Scrolling up
-        setVisible(true);
-      }
-
+      setVisible(currentScrollY < lastScrollY.current);
       lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <div
-      className={`fixed z-50 w-full h-16 max-w-lg -translate-x-1/2 bg-white shadow-lg rounded-t-lg sm:rounded-full bottom-0 left-1/2 transition-transform duration-300 ease-in-out dark:bg-gray-800 ${
+      className={`fixed z-50 w-full h-16 max-w-lg -translate-x-1/2 bg-gray-800 shadow-lg rounded-t-lg sm:rounded-full bottom-0 left-1/2 transition-transform duration-300 ease-in-out ${
         visible ? "translate-y-0" : "translate-y-full"
       }`}
     >
@@ -63,7 +54,7 @@ export const Navigation = () => {
         <div className="flex items-center justify-center">
           <Link
             onClick={() => setActive("add")}
-            className="inline-flex items-center justify-center w-12 h-12 font-medium bg-purple-700 rounded-full transition duration-200 group hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 dark:focus:ring-purple-900 active:scale-95"
+            className="inline-flex items-center justify-center w-12 h-12 font-medium bg-purple-700 rounded-full transition duration-200 group hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 active:scale-95"
             to="/create"
           >
             <i className="fa-solid fa-plus text-xl text-white"></i>
