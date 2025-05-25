@@ -90,31 +90,34 @@ export const Header = () => {
 
       {/* Password Prompt */}
       {showPasswordInput && !isAdmin && (
-        <div className="fixed top-16 w-full flex justify-center z-40">
+        <div className="fixed top-16 w-full flex justify-center z-40 px-4">
           <form
             onSubmit={handleSubmit}
-            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg rounded-xl px-6 py-4 flex flex-col gap-1"
+            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg rounded-xl px-6 py-4 flex flex-wrap gap-2 max-w-md w-full"
           >
-            <div className="flex items-center gap-3">
-              <input
-                type="password"
-                ref={inputRef}
-                placeholder="Enter admin password"
-                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm w-64 dark:bg-gray-700 dark:text-white"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (error) setError("");
-                }}
-                aria-invalid={error ? "true" : "false"}
-                aria-describedby="password-error"
-              />
+            <input
+              type="password"
+              ref={inputRef}
+              placeholder="Enter admin password"
+              className="flex-grow min-w-[150px] px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:bg-gray-700 dark:text-white"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (error) setError("");
+              }}
+              aria-invalid={error ? "true" : "false"}
+              aria-describedby="password-error"
+            />
+
+            {/* Buttons container */}
+            <div className="flex flex-col md:flex-row justify-center w-full md:w-auto gap-2">
               <button
                 type="submit"
                 className="px-4 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
               >
                 Submit
               </button>
+
               <button
                 type="button"
                 className="text-gray-500 hover:text-red-500 text-xl"
@@ -129,11 +132,11 @@ export const Header = () => {
               </button>
             </div>
 
-            {/* Inline error message below the input */}
+            {/* Inline error message below input, full width */}
             {error && (
               <p
                 id="password-error"
-                className="text-sm text-red-600 font-medium pl-1"
+                className="w-full text-sm text-red-600 font-medium pl-1 mt-1"
                 style={{ marginLeft: "0.5rem" }}
               >
                 {error}

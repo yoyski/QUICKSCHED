@@ -181,14 +181,27 @@ export const Create = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 px-2 flex justify-center">
-      <div className="w-full max-w-lg bg-white rounded-lg shadow-md p-3 flex flex-col space-y-4 mt-4 relative">
-        {/* Progress Bar at Top */}
+      <div
+        className={`w-full max-w-lg bg-white rounded-lg shadow-md p-3 flex flex-col space-y-4 mt-4 relative overflow-hidden ${
+          loading ? "pointer-events-none" : ""
+        }`}
+      >
+        {/* Loading Progress Bar */}
         {progress > 0 && (
           <div className="absolute top-0 left-0 w-full bg-gray-200 rounded-t-md overflow-hidden h-1 z-50">
             <div
               className="bg-purple-600 h-1 transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
+          </div>
+        )}
+
+        {/* Dim overlay */}
+        {loading && (
+          <div className="absolute inset-0 bg-white bg-opacity-70 z-40 flex items-center justify-center">
+            <div className="text-purple-700 font-semibold animate-pulse">
+              Uploading...
+            </div>
           </div>
         )}
 
