@@ -80,7 +80,6 @@ export const CalendarPage = () => {
   const [selectedEventType, setSelectedEventType] = useState(null);
   const [loading, setLoading] = useState(true);
   const [confirmDeletePost, setConfirmDeletePost] = useState(null);
-  const [buttonLoading, setButtonLoading] = useState(false);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -90,7 +89,6 @@ export const CalendarPage = () => {
       } catch (err) {
         console.error("Failed to fetch posts:", err);
       } finally {
-        setLoading(false);
       }
     };
     fetchPosts();
@@ -149,7 +147,6 @@ export const CalendarPage = () => {
                 <CustomToolbar
                   view={view}
                   setView={setView}
-                  setButtonLoading={setButtonLoading}
                   {...props}
                 />
               ),
