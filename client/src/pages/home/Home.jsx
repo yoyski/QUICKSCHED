@@ -85,7 +85,7 @@ export const Home = () => {
 
       {/* CONTENT */}
       {!loading && (
-        <div className="p-4 max-w-5xl mx-auto px-4 sm:px-6 mt-20">
+        <div className="p-4 max-w-5xl mx-auto px-4 sm:px-6 mt-16">
           {posts.length === 0 ? (
             <div className="bg-gray-100 rounded-lg p-8 text-center shadow-md">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">

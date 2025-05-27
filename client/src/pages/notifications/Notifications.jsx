@@ -161,6 +161,11 @@ export const Notifications = () => {
                               "MMM d, yyyy · h:mm a"
                             )}
                           </p>
+
+                          {/* New line added */}
+                          <p className="text-xs text-gray-600 mt-1 italic">
+                            Your scheduled post is already posted on Facebook.
+                          </p>
                         </div>
                       </div>
 

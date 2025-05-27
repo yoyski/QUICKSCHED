@@ -69,45 +69,28 @@ export const Categories = () => {
       <Header />
 
       {/* CATEGORY NAVIGATION */}
-      <div className="w-full px-4 sm:px-6 md:px-8 mt-16">
-        <div className="flex flex-wrap justify-center gap-3">
-          {["general", "birthday", "event", "holiday"].map((category) => (
-            <button
-              key={category}
-              onClick={() => filterByCategory(category)}
-              className={`px-3 py-1 rounded-full text-sm font-medium capitalize border transition duration-200 
-                ${
-                  selectedCategory === category
-                    ? getPostTypeColor(category)
-                    : "bg-white text-purple-600 border-purple-300 hover:bg-purple-100 hover:text-purple-800"
-                }`}
-            >
-              {capitalize(category)}
-            </button>
-          ))}
+      <div className="w-full mt-16 px-4 sm:px-6 md:px-8 overflow-x-auto">
+        <div className="flex justify-center sm:justify-center gap-2 min-w-max">
+          {["general", "birthday", "event", "holiday"].map((category) => {
+            const isActive = selectedCategory === category;
+            const activeStyles = getPostTypeColor(category);
+            return (
+              <button
+                key={category}
+                onClick={() => filterByCategory(category)}
+                className={`px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold capitalize border 
+            ${
+              isActive
+                ? `${activeStyles} border-transparent`
+                : "bg-white text-purple-600 border-purple-200 hover:bg-purple-100 hover:text-purple-800"
+            }`}
+              >
+                {capitalize(category)}
+              </button>
+            );
+          })}
         </div>
       </div>
-
-      {/* LOADING */}
-      {loading && (
-        <div className="fixed inset-0 bg-transparent z-50 flex items-center justify-center">
-          <div className="flex space-x-2">
-            <div className="w-3 h-3 bg-yellow-400 rounded-full animate-bounce" />
-            <div
-              className="w-3 h-3 bg-red-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.15s" }}
-            />
-            <div
-              className="w-3 h-3 bg-blue-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.3s" }}
-            />
-            <div
-              className="w-3 h-3 bg-green-400 rounded-full animate-bounce"
-              style={{ animationDelay: "0.45s" }}
-            />
-          </div>
-        </div>
-      )}
 
       {/* POSTS */}
       {!loading && (
@@ -142,7 +125,7 @@ export const Categories = () => {
               {filteredPosts.map((post) => (
                 <div
                   key={post._id}
-                  className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col"
+                  className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm flex flex-col"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <span
@@ -158,14 +141,14 @@ export const Categories = () => {
                           <Link
                             to={`/create/${post._id}`}
                             title="Edit"
-                            className="text-gray-500 hover:text-blue-600 transition text-lg"
+                            className="text-gray-500 hover:text-blue-600 text-lg"
                           >
                             <i className="fa-regular fa-pen-to-square" />
                           </Link>
                           <button
                             onClick={() => setConfirmDeletePost(post)}
                             title="Delete"
-                            className="text-gray-500 hover:text-red-600 transition text-lg"
+                            className="text-gray-500 hover:text-red-600 text-lg"
                           >
                             <i className="fa-regular fa-trash-can" />
                           </button>
@@ -298,8 +281,7 @@ export const Categories = () => {
               <button
                 onClick={async () => {
                   try {
-                    if (!isAdmin) return; // prevent deletion if not admin
-
+                    if (!isAdmin) return;
                     await deleteScheduledPost(confirmDeletePost._id);
                     const updatedPosts = posts.filter(
                       (post) => post._id !== confirmDeletePost._id

@@ -67,8 +67,8 @@ export const Header = () => {
               onClick={handleToggle}
               className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 isAdmin
-                  ? "bg-purple-800 text-purple-300 hover:bg-purple-700"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                  ? "bg-purple-800 text-white-300 hover:bg-purple-700"
+                  : "bg-gray-700 text-white-300 hover:bg-white-600"
               }`}
             >
               <span className="relative flex items-center">
@@ -77,7 +77,7 @@ export const Header = () => {
                     isAdmin ? "bg-green-500" : "bg-gray-500"
                   }`}
                 />
-                {isAdmin ? "Admin Mode" : "Visitor Mode"}
+                Admin Mode
               </span>
             </button>
           </div>
@@ -105,7 +105,6 @@ export const Header = () => {
               aria-describedby="password-error"
             />
 
-            {/* Buttons container */}
             <div className="flex flex-col md:flex-row justify-center w-full md:w-auto gap-2">
               <button
                 type="submit"

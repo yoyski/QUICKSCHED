@@ -200,7 +200,7 @@ export const Create = () => {
         {loading && (
           <div className="absolute inset-0 bg-white bg-opacity-70 z-40 flex items-center justify-center">
             <div className="text-purple-700 font-semibold animate-pulse">
-              Uploading...
+              Scheduling...
             </div>
           </div>
         )}
@@ -264,7 +264,7 @@ export const Create = () => {
                       <button
                         type="button"
                         onClick={() => handleRemoveFile(index)}
-                        className="absolute top-1 right-1 bg-white bg-opacity-80 rounded-full p-1 w-6 h-6 text-gray-600 hover:text-red-600"
+                        className="absolute top-1 right-1 bg-white rounded-full w-6 h-6 flex items-center justify-center text-gray-600 hover:text-red-600 shadow"
                         aria-label="Remove image"
                       >
                         <i className="fa-solid fa-xmark" />
