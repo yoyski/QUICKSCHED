@@ -129,7 +129,7 @@ export const CalendarPage = () => {
       <Header />
 
       {buttonLoading && (
-        <div className="h-1 bg-purple-500 animate-pulse transition-all duration-300" />
+        <div className="fixed top-0 left-0 w-full h-1 bg-purple-500 animate-pulse z-50" />
       )}
 
       <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 mt-12">
