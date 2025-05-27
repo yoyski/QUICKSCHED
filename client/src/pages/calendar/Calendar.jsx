@@ -260,7 +260,7 @@ export const CalendarPage = () => {
               <i className="fa-solid fa-xmark" />
             </button>
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Are you sure you want to delete this post?
+              Are you sure you want to delete this scheduled post?
             </h3>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
