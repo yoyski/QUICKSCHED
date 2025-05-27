@@ -171,6 +171,7 @@ export const Home = () => {
                       <img
                         src={post.images[0]}
                         alt="Post preview"
+                        loading="lazy"
                         className="w-full h-48 object-cover rounded-lg border border-gray-100"
                       />
                       {post.images.length > 1 && (
@@ -235,6 +236,7 @@ export const Home = () => {
                       key={idx}
                       src={img}
                       alt={`Post image ${idx + 1}`}
+                      loading="lazy"
                       className="rounded-lg object-cover h-60 w-full"
                     />
                   ))}
