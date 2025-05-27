@@ -7,6 +7,7 @@ export const Header = () => {
   const [showPasswordInput, setShowPasswordInput] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false); // <-- NEW state for toggling password visibility
   const inputRef = useRef(null);
 
   const handleToggle = () => {
@@ -25,9 +26,11 @@ export const Header = () => {
       setShowPasswordInput(false);
       setPassword("");
       setError("");
+      setShowPassword(false); // reset to hidden on success
     } else {
       setError("Incorrect password. Please try again.");
       setPassword("");
+      setShowPassword(false); // reset to hidden on failure
       if (inputRef.current) {
         inputRef.current.focus();
       }
@@ -46,6 +49,7 @@ export const Header = () => {
         setShowPasswordInput(false);
         setPassword("");
         setError("");
+        setShowPassword(false); // reset visibility when closing
       }
     };
     document.addEventListener("keydown", handleEsc);
@@ -91,19 +95,34 @@ export const Header = () => {
             onSubmit={handleSubmit}
             className="bg-gray-800 border border-gray-700 shadow-lg rounded-xl px-6 py-4 flex flex-wrap gap-2 max-w-md w-full"
           >
-            <input
-              type="password"
-              ref={inputRef}
-              placeholder="Enter admin password"
-              className="flex-grow min-w-[150px] px-4 py-2 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm bg-gray-700 text-white"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                if (error) setError("");
-              }}
-              aria-invalid={error ? "true" : "false"}
-              aria-describedby="password-error"
-            />
+            <div className="relative flex-grow min-w-[150px]">
+              <input
+                type={showPassword ? "text" : "password"}
+                ref={inputRef}
+                placeholder="Enter admin password"
+                className="w-full px-4 py-2 pr-10 rounded-lg border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm bg-gray-700 text-white"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError("");
+                }}
+                aria-invalid={error ? "true" : "false"}
+                aria-describedby="password-error"
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white focus:outline-none"
+                onClick={() => setShowPassword((prev) => !prev)}
+                title={showPassword ? "Hide password" : "Show password"}
+                tabIndex={-1} // prevent focus on tab
+              >
+                <i
+                  className={`fa-solid ${
+                    showPassword ? "fa-eye" : "fa-eye-slash"
+                  }`}
+                />
+              </button>
+            </div>
 
             <div className="flex flex-col md:flex-row justify-center w-full md:w-auto gap-2">
               <button
@@ -120,6 +139,7 @@ export const Header = () => {
                   setShowPasswordInput(false);
                   setPassword("");
                   setError("");
+                  setShowPassword(false);
                 }}
                 title="Cancel"
               >
