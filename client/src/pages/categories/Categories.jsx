@@ -69,8 +69,8 @@ export const Categories = () => {
       <Header />
 
       {/* CATEGORY NAVIGATION */}
-      <div className="w-full mt-16 px-4 sm:px-6 md:px-8 overflow-x-auto">
-        <div className="flex justify-center sm:justify-center gap-2 min-w-max">
+      <div className="w-full mt-16 px-0 sm:px-6 md:px-8 overflow-x-auto bg-red-500">
+        <div className="flex justify-center space-x-6 sm:space-x-10 lg:space-x-16 bg-blue-500 px-4">
           {["general", "birthday", "event", "holiday"].map((category) => {
             const isActive = selectedCategory === category;
             const activeStyles = getPostTypeColor(category);
@@ -78,7 +78,7 @@ export const Categories = () => {
               <button
                 key={category}
                 onClick={() => filterByCategory(category)}
-                className={`px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold capitalize border 
+                className={`px-3 py-1 sm:px-4 sm:py-2 rounded-md lg:rounded-full text-xs sm:text-sm font-semibold capitalize border
             ${
               isActive
                 ? `${activeStyles} border-transparent`
