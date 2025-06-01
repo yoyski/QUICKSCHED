@@ -69,8 +69,8 @@ export const Categories = () => {
       <Header />
 
       {/* CATEGORY NAVIGATION */}
-      <div className="w-full mt-16 px-0 sm:px-6 md:px-8 overflow-x-auto bg-red-500">
-        <div className="flex justify-center space-x-6 sm:space-x-10 lg:space-x-16 bg-blue-500 px-4">
+      <div className="w-full mt-16 px-0 sm:px-6 md:px-8 overflow-x-auto">
+        <div className="flex justify-center space-x-6 sm:space-x-10 lg:space-x-16px-4">
           {["general", "birthday", "event", "holiday"].map((category) => {
             const isActive = selectedCategory === category;
             const activeStyles = getPostTypeColor(category);
